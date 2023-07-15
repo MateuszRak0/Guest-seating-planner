@@ -1,16 +1,128 @@
 const appWindow = document.getElementById("app-window");
-const canvas = document.getElementById("main-canvas");
-const canvas2 = document.getElementById("second-canvas");
+const canvas = document.getElementById("layer1");
+const canvas2 = document.getElementById("layer2");
 const ctx = canvas.getContext("2d");
-const ctx2 = canvas2.getContext("2d");// second canvas to not refresh all tables and chairs when moving one of them
-ctx.fillStyle = "#c48545";
-ctx2.fillStyle = "#64b327";
-ctx.font = "14px monospace";
-ctx2.font = "14px monospace";
+const ctx2 = canvas2.getContext("2d");
 
 let allTables = [];
 let allChairs = [];
 let selectedObject;
+
+let questsList = {
+    nameInput:document.getElementById("new-quest-name"),
+    editNameInput:document.getElementById("edit-quest-name"),
+
+    lastNameInput:document.getElementById("new-quest-last-name"),
+    editLastNameInput:document.getElementById("edit-quest-last-name"),
+
+    listElement:document.getElementById("quest-list"),
+    listMode:document.getElementById("list-mode"),
+    resultDisplay:document.getElementById("quest-adding-result"),
+
+    quests:{},
+    selectedQuest:null,
+    editMode:true,
+    editFromChair:false,
+
+    add:function(){
+        let name = this.nameInput.value;
+        let lastName = this.lastNameInput.value;
+        if(this.nameValidator(name)){
+            let quest = new Quest(name,lastName)
+            let questHtmlElement = document.createElement("button");
+            questHtmlElement.classList.add("tool-btn");
+            questHtmlElement.value = quest.id;
+            questHtmlElement.addEventListener("click",this.selectQuest.bind(this));
+            quest.element = questHtmlElement;
+            this.quests[quest.id] = quest;
+            this.listElement.appendChild(questHtmlElement);
+            this.nameInput.value = "";
+            this.lastNameInput.value = "";
+            if(this.editMode){
+                quest.refresh();
+                this.resultDisplay.innerHTML = "Pomyślnie dodano ";
+            }
+            else{
+                quest.takeSeat();
+                chairTools.show(selectedObject);
+            }
+            
+        } 
+        else{
+            this.resultDisplay.innerHTML = "Imię jest wymagane !"
+        }
+    },
+
+    EnableEditMode:function(quest){
+        this.editMode = true;
+        this.listMode.innerHTML = "Wybierz i Edytuj";
+        if(quest){ 
+            this.selectedQuest = quest;
+            this.editFromChair = true;
+        } 
+    },
+
+    DisableEditMode:function(){
+        this.editMode = false;
+        this.listMode.innerHTML = "Kto ma tu siedzieć ?";
+        this.filter((quest)=>{
+            if(!quest.seat) return true
+        })
+    },
+
+    filter:function(filterFunc){
+        for(let id in this.quests){
+            let quest = this.quests[id];
+            ( filterFunc(quest) ) ? quest.show() : quest.hide();
+        }
+    },
+
+    removeQuest:function(){
+        this.selectedQuest.leaveParty();
+        delete this.quests[this.selectedQuest.id];
+        this.selectedQuest = false;
+        popupsMenager.returnToLast();
+    },
+
+    refreshEditWindow:function(){
+        this.editNameInput.value = this.selectedQuest.name;
+        this.editLastNameInput.value = this.selectedQuest.lastName;
+    },
+
+    nameValidator:function(name){
+        if(!name || name.trim() == ""){
+            return false;
+        }
+        return true
+    },
+
+    editQuest:function(){
+        let name = this.editNameInput.value;
+        let lastName = this.editLastNameInput.value;
+        if(!this.nameValidator(name)) return false
+        this.selectedQuest.name = name;
+        this.selectedQuest.lastName = lastName;
+        this.selectedQuest.refresh();
+        if(this.editFromChair){
+            this.editFromChair = false;
+            chairTools.refreshName();
+        }
+    },
+
+    selectQuest:function(questBtn){
+        this.selectedQuest = this.quests[questBtn.target.value];
+        if(this.selectedQuest){
+            if(this.editMode){
+                this.refreshEditWindow();
+                popupsMenager.activeById("edit-quest-tool");
+            }
+            else{
+                this.selectedQuest.takeSeat();
+                popupsMenager.disablePopup();
+            }
+        }
+    },
+};
 
 // Base tools ( always active )
 let cursor = {
@@ -58,9 +170,10 @@ let draggingTool = {
     endDrag:function(){
         if(this.dragedObj){
             if(this.dragedObj.constructor != Chair){
-                followingToolbar.showTableTools();
+                tableTools.show(this.dragedObj);
             }
             else{
+                chairTools.show(selectedObject)
                 let hoveredTable = selectObject([allTables]);
                 if(hoveredTable){
                     if(hoveredTable != this.dragedObj.parent){
@@ -86,188 +199,107 @@ let draggingTool = {
             this.dragedObj = false;
         }
     },
-}
+};
 
 let popupsMenager = {
     allPopups:{},
     actualShowed:null,
+    lastShowed:null,
 
     loadPopups:function(){
-        for(let page of document.getElementsByClassName("popup")){
-            let name = page.getAttribute("name");
-            this.allPopups[name] = page;
+        for(let popup of document.getElementsByClassName("popup")){
+            let popupID = popup.getAttribute("id");
+            this.allPopups[popupID] = popup;
         }
 
-        for(let btn of document.getElementsByName("show-popup-button")){
+        for(let btn of document.getElementsByName("show-popup-btn")){
             btn.addEventListener("click",this.activePopup.bind(this))
         }
 
-        for(let btn of document.getElementsByClassName("popup-disbtn")){
-            btn.addEventListener("click",this.disablePopop.bind(this));
+        for(let btn of document.getElementsByName("disable-popup-btn")){
+            btn.addEventListener("click",this.disablePopup.bind(this));
+        }
+
+        for(let btn of document.getElementsByName("return-popup-btn")){
+            btn.addEventListener("click",this.returnToLast.bind(this));
         }
 
     },
 
-    disablePopop:function(){
+    disablePopup:function(){
         if(this.actualShowed){
-            this.actualShowed.classList.remove("active");
+            this.lastShowed = this.actualShowed;
+            this.actualShowed.classList.remove("popup-active");
             this.actualShowed = false;
         }
     },
 
     activePopup:function(event){
-        this.disablePopop();
-        let popupName = event.currentTarget.getAttribute("value");
-        this.actualShowed = this.allPopups[popupName];
-        this.actualShowed.classList.add("active");
+        this.disablePopup();
+        let popupID = event.currentTarget.getAttribute("value");
+        this.actualShowed = this.allPopups[popupID];
+        this.actualShowed.classList.add("popup-active");
+    },
+
+    activeById:function(popupID){
+        this.disablePopup();
+        this.actualShowed = this.allPopups[popupID];
+        this.actualShowed.classList.add("popup-active");
+    },
+
+    returnToLast:function(){
+        let id = this.lastShowed.getAttribute("id");
+        this.activeById(id);
     }
+};
 
-}
+let tableTools = {
+    popup:"table-tools",
+    idDisplay:document.getElementById("tableID"),
+    rotateBtn:document.getElementsByName("rotate-table"),
 
-let questsList = {
-    listOjbect:document.getElementById("quest-big-list"),
-    nameInput:document.getElementById("quest-name-input"),
-    lastNameInput:document.getElementById("quest-lastName-input"),
-    countDisplays:document.getElementsByClassName("questCount"),
-    searchOptions:document.getElementById("search-options"),
-    messegeBox:document.querySelector("[name=addQuestMessege]"),
+    show:function(table){
+        popupsMenager.activeById(this.popup);
+        this.idDisplay.innerHTML = allTables.indexOf(table) + 1;
+    },
 
+};
 
-    selectedQuest:null,
-    quests:{},
-    nextFunc:null,
+let chairTools = {
+    popupFree:"chair-tools-free",
+    popupBusy:"chair-tools-occupied",
+    idDisplays:document.getElementsByClassName("chair-ID"),
+    questNameBox:document.getElementById("quest-on-chair"),
 
-    addQuest:function(){
-        let name = this.nameInput.value;
-        if(!name || name.trim() == ""){
-            this.messegeBox.style.color = "#ff0000";
-            this.messegeBox.innerHTML = "Podaj Jakieś imię !";
-            return false;
-        } else{
-            this.messegeBox.style.color = "#00ff00";
-            this.messegeBox.innerHTML = "Pomyślnie dodano";
+    show:function(chair){
+        let index = allChairs.indexOf(chair) + 1;
+        for(display of this.idDisplays){
+            display.innerHTML = index;
         }
-        let lastName = this.lastNameInput.value;
-        let quest = new Quest(name,lastName);
-        let elements = this.renderQuest(quest);
-        let searchOption = document.createElement("option");
-        searchOption.value = quest.name +" "+ quest.lastName;
-        this.searchOptions.appendChild(searchOption);
 
-        this.quests[quest.id] = {
-            data:quest,
-            element:elements[0],
-            smallElement:elements[1],
-            searchOption:searchOption,
-        };
-
-        refreshDisplays();
+        if(chair.occupied){
+            this.questNameBox.innerHTML = `<span>${chair.quest.name}</span> <span>${chair.quest.lastName}</span> `;
+            popupsMenager.activeById(this.popupBusy);
+        }
+        else{
+            popupsMenager.activeById(this.popupFree);
+        }
     },
 
-    renderQuest:function(quest){
-        let button = document.createElement("button");
-        button.innerHTML = quest.name + " " + quest.lastName;
-        button.value = quest.id;
-        button.addEventListener("click",takeSeat)
-        let li = document.createElement("li");
-        let questCard = 
-            `
-                <i class="icon-wrench" name="edit" value="${quest.id}"></i>
-                <i class="icon-trash" name="remove" value="${quest.id}"></i>
-                <input type="text" value="${quest.name}" placeholder="Imię " name='name' disabled>
-                <input type="text" value="${quest.lastName}" placeholder="Nazwisko"  name='lastName' disabled>  
-                <button type="button" name="accept" disabled >&#10004;</button>
-            `
-        li.innerHTML = questCard;
-        this.listOjbect.appendChild(li);
-        document.getElementById("quest-small-list").appendChild(button)
-        let btnTools = li.querySelector('[name="edit"]');
-        let btnRemove = li.querySelector('[name="remove"]');
-
-        btnTools.addEventListener("click",this.activeEditMode.bind(this))
-        btnRemove.addEventListener("click",this.removeQuest.bind(this))
-        return [li,button];
-    },
-
-
-    removeQuest:function(e){
-        let id = e.target.getAttribute("value");
-        let obj = this.quests[id];
-        obj.searchOption.outerHTML = "";
-        obj.element.outerHTML = "";
-        obj.smallElement.outerHTML = "";
-        delete this.quests[id];
-        refreshDisplays();
-    },
-
-    EditQuestData:function(){
-        for(let input of this.selectedQuest.element.querySelectorAll("input")){
-            this.selectedQuest.data[input.name] = input.value;
-            input.disabled = true;
-        } 
-        this.selectedQuest.searchOption.value = this.selectedQuest.data.name +" "+ this.selectedQuest.data.lastName;
-        this.selectedQuest.smallElement.innerHTML = this.selectedQuest.data.name +" "+ this.selectedQuest.data.lastName;
-        let btn = this.selectedQuest.element.querySelector('button[name=accept]');
-        btn.disabled = true;
-    },
-    
-
-    activeEditMode:function(e){
-        let id = e.target.getAttribute("value");
-        let obj = this.quests[id];
-        this.selectedQuest = obj;
-        for(let input of obj.element.querySelectorAll("input")){
-            input.disabled = false;
-        } 
-        let btn = obj.element.querySelector('button[name=accept]');
-        btn.disabled = false;
-        btn.addEventListener("click",this.EditQuestData.bind(this))
-    },
-
-}
-
-let followingToolbar = {
-    tableTools:document.getElementById("table-edit-menu"),
-    tableInfo:document.getElementById("tableInfo"),
-    chairTools:document.getElementById("chair-edit-menu"),
-    chairInfo:document.getElementById("chairInfo"),
-
-    hide:function(){
-        this.tableTools.classList.remove("active");
-        this.chairTools.classList.remove("active");
-    },
-
-    showChairTools:function(occupied){
-        this.hide();
-        this.chairTools.classList.add("active");
-        this.chairInfo.innerHTML = `Krzesło nr: ${allChairs.indexOf(selectedObject)+1}`;
-        this.moveToMouse(this.chairTools);
-    },
-
-    showTableTools:function(){
-        this.hide();
-        this.tableTools.classList.add("active");
-        this.tableInfo.innerHTML = `chairs: ${selectedObject.chairs.length} / ${selectedObject.maxChairs}`;
-        this.moveToMouse(this.tableTools);
-    },
-
-    moveToMouse:function(tools){
-        let posX = cursor.x + 50;
-        let posY = cursor.y - 60;
-        tools.style.left = `${posX}px`;
-        tools.style.top = `${posY}px`;
+    refreshName:function(){
+        this.questNameBox.innerHTML = `<span>${selectedObject.quest.name}</span> <span>${selectedObject.quest.lastName}</span> `;
     }
-}
+};
 
-//Tables, chair & quest Constructors 
 
+// Constructors ( tables , quest , chair , other elements)
 function RoundTable(chairsCount = 2,sides = 1,rotation = 0){
     this.rotation = rotation;
     this.chairs = [];
     this.sides = sides;
     this.centerX = 150 + appWindow.scrollLeft;
     this.centerY = 150 + appWindow.scrollTop;
-    this.maxChairs = 20/this.sides;
+    this.maxChairs = 16;
 
     for(let startChairs = 0; startChairs < chairsCount; startChairs++){
         let chair = new Chair(this);
@@ -281,7 +313,6 @@ function RoundTable(chairsCount = 2,sides = 1,rotation = 0){
         ctx.beginPath();
         ctx.arc(this.centerX,this.centerY,this.size/2, 0, 2 * Math.PI);
         ctx.fill();
-       // ctx.fillRect(this.centerX-1,this.centerY-1,2,2);
         this.countChairsPositions(ctx);
     };
 
@@ -304,13 +335,8 @@ function RoundTable(chairsCount = 2,sides = 1,rotation = 0){
         clearContext(ctx2);
         let multiper = this.sides*1.9;
         this.size = (this.chairs.length * (2+multiper)) + 20;
-        this.maxChairs = 20/this.sides;
-        if(this.chairs.length > this.maxChairs){
-            this.removeChair();
-        }
-        else{
-            this.render(ctx2);
-        }
+        this.render(ctx2);
+        
     };
 
     this.addChair = function(){
@@ -320,13 +346,6 @@ function RoundTable(chairsCount = 2,sides = 1,rotation = 0){
             this.recalculate();
         }
     };
-
-    this.removeChair = function(){
-        let chair = this.chairs.pop();
-        this.recalculate();
-        return chair;
-    };
-
 }
 
 function SquareTable(chairsCount = 2,sides = 2,rotation = 0){
@@ -336,7 +355,7 @@ function SquareTable(chairsCount = 2,sides = 2,rotation = 0){
     this.width = 20 + (20*this.sides);
     this.centerX = 150 + appWindow.scrollLeft;
     this.centerY = 150 + appWindow.scrollTop;
-    this.maxChairs = 50*this.sides;
+    this.maxChairs = 100;
     this.corners = {
         p1:null,
         p2:null,
@@ -362,7 +381,6 @@ function SquareTable(chairsCount = 2,sides = 2,rotation = 0){
         ctx.lineTo(this.corners.p4.x,this.corners.p4.y);
         ctx.lineTo(this.corners.p1.x,this.corners.p1.y);
         ctx.fill();
-       // ctx.fillRect(this.centerX-1,this.centerY-1,2,2) // center
         this.countChairsPositions(ctx);
     };
 
@@ -413,13 +431,8 @@ function SquareTable(chairsCount = 2,sides = 2,rotation = 0){
         clearContext(ctx2);
         this.size = ((this.chairs.length/(this.sides*2)) * 40)+20;
         this.width = 20 + (20*this.sides);
-        this.maxChairs = 50*this.sides;
-        if(this.chairs.length > this.maxChairs){
-            this.removeChair();
-        }
-        else{
-            this.render(ctx2);
-        }
+        this.render(ctx2);
+        
     };
 
     this.addChair = function(){
@@ -429,20 +442,13 @@ function SquareTable(chairsCount = 2,sides = 2,rotation = 0){
             this.recalculate();
         }
     };
-
-    this.removeChair = function(){
-        let chair = this.chairs.pop();
-        this.recalculate();
-        return chair;
-    };
-    
 }
 
 function Chair(parent){
     this.occupied = false;
     this.quest = false;
     this.parent = parent;
-    this.size = 20;
+    this.size = 22;
     this.centerX;
     this.centerY;
     allChairs.push(this);
@@ -450,13 +456,24 @@ function Chair(parent){
     this.render = function(ctx){
         ctx.beginPath();
         ctx.arc(this.centerX,this.centerY,this.size/2, 0, 2 * Math.PI);
-        ctx.stroke();
-        if(this == selectedObject){
-            ctx.fill();
+        let lastColor = ctx.fillStyle;
+        if(this != selectedObject){
+            if(this.occupied == true){     
+                ctx.fillStyle = "#f73434";       
+                }
+            else{
+                ctx.fillStyle = "#89b52b";
+            }
         }
-        else if(this.occupied == true){
-            ctx.fill();
-        }
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.fillText(allChairs.indexOf(this)+1,this.centerX-8,this.centerY+3);
+        ctx.fillStyle = lastColor;
+    };
+
+    this.disinfectAfterQuest = function(){
+        this.quest = false;
+        this.occupied = false;
     };
 }
 
@@ -467,6 +484,45 @@ function Quest(name,lastName){
     this.lastName = lastName;
     this.id = `q-${this.nextID}`;
     Quest.prototype.nextID ++;
+    this.element;
+
+    this.refresh = function(){
+        this.element.innerHTML = `${this.name} ${this.lastName}`;
+    };
+
+    this.hide = function(){
+        this.element.classList.add("quest-hidden");
+    }
+
+    this.show = function(){
+        this.element.classList.remove("quest-hidden");
+    }
+
+    this.takeSeat = function(){
+        if(selectedObject.constructor == Chair){
+            if(selectedObject.occupied == false){
+                selectedObject.occupied = true;
+                selectedObject.quest = this;
+                this.seat = selectedObject;
+                this.refresh();
+            }
+        }
+    };
+
+    this.leaveSeat = function(){
+        if(this.seat){
+            this.seat.disinfectAfterQuest();
+            this.seat = false;
+            this.refresh();
+        }
+    };
+
+    this.leaveParty = function(){
+        this.leaveSeat();
+        this.element.outerHTML = "";
+    };
+
+
 }
 
 // Base Functions
@@ -503,12 +559,12 @@ function isPointInsideRectangle(x, y, rectangleCenter, vertexA, vertexB, vertexC
     }
 }
   
-  function isPointLeftOfEdge(x, y, edgeStart, edgeEnd) {
+function isPointLeftOfEdge(x, y, edgeStart, edgeEnd) {
     const edgeVector = [edgeEnd[0] - edgeStart[0], edgeEnd[1] - edgeStart[1]];
     const pointVector = [x - edgeStart[0], y - edgeStart[1]];
     const crossProduct = edgeVector[0] * pointVector[1] - edgeVector[1] * pointVector[0];
     return crossProduct >= 0;
-  }
+}
 
 function selectObject(lists){
     for(let list of lists){
@@ -534,34 +590,13 @@ function mouseDown(){
     let object = selectObject([allTables,allChairs]);
     if(object){
         selectedObject = object;
-
-        if(object.constructor == Chair){
-            followingToolbar.showChairTools(object.occupied);
-        }
-
         draggingTool.startDrag(object);
     }
     else{
-        followingToolbar.hide();
-    }
-}
-
-function refreshDisplays(){
-    let quests = Object.keys(questsList.quests).length;
-    let chairs = allChairs.length;
-
-    for(let display of questsList.countDisplays){
-        if(quests > chairs){display.style.color = "#ff0000";} 
-        else{display.style.color = "#000000";}
-        display.innerHTML = quests;
-    }
-
-    for(let display of document.getElementsByClassName("chairCount")){
-        display.innerHTML = chairs;
-    }
-
-    for(let display of document.getElementsByClassName("tableCount")){
-        display.innerHTML = allTables.length;
+        popupsMenager.disablePopup();
+        selectedObject = null;
+        clearContext(ctx2);
+        renderAll();
     }
 }
 
@@ -571,14 +606,15 @@ function removeTable(){
     let index = allTables.indexOf(selectedObject);
     allTables.splice(index,1);
     for(let chair of selectedObject.chairs){
+        if(chair.occupied){
+            chair.quest.leaveSeat() = false;
+        }
         let index = allChairs.indexOf(chair);
         allChairs.splice(index,1);
     }
     selectedObject = false;
     clearContext(ctx2);
-    followingToolbar.hide();
     renderAll();
-    refreshDisplays();
 }
 
 function rotateTable(event){
@@ -593,19 +629,15 @@ function rotateTable(event){
 function copyTable(){
     let table = new selectedObject.constructor(selectedObject.chairs.length,selectedObject.sides,selectedObject.rotation);
     allTables.push(table);
-    refreshDisplays();
     table.render(ctx);
 }
 
 function changeTableMode(){
     (selectedObject.sides == 2) ? selectedObject.sides = 1 : selectedObject.sides = 2 ;
     selectedObject.recalculate();
-    document.getElementById("tableInfo").innerHTML = `chairs: ${selectedObject.chairs.length} / ${selectedObject.maxChairs}`;
-    
 }
 
 function replaceChair(newTable){
-    clearContext(ctx2);
     let index = selectedObject.parent.chairs.indexOf(selectedObject);
     selectedObject.parent.chairs.splice(index,1);
     selectedObject.parent.recalculate();
@@ -613,66 +645,109 @@ function replaceChair(newTable){
     newTable.chairs.push(selectedObject);
     newTable.recalculate();
     renderAll();
-    followingToolbar.showChairTools();
 }
 
-function takeSeat(event){
-    if(selectedObject.constructor == Chair){
-        if(selectedObject.occupied == false){
-            let quest = questsList.quests[event.target.value];
-
-            selectedObject.occupied = true;
-            selectedObject.quest = quest;
-            quest.data.chair = selectedObject;
-            quest.smallElement.disabled = true;
-
-            console.log(selectedObject)
-            
+function selectChairToRemove(){
+    for(let chair of selectedObject.chairs){
+        if(!chair.occupied){
+            return chair;
         }
     }
-}
+    return selectedObject.chairs.pop(); // if no found free chair remove first busy 
+};
 
-// event Listeners \/
+function removeChair(chair){
+    clearContext(ctx2);
+    if(chair.occupied){
+        chair.quest.leaveSeat();
+    }
+    let index = chair.parent.chairs.indexOf(chair)
+    chair.parent.chairs.splice(index,1);
+    chair.parent.recalculate();
+    allChairs.splice(allChairs.indexOf(chair),1);
+};
+
+// Event Listeners & prepare object's
 canvas2.addEventListener("mousedown",mouseDown);
 canvas2.addEventListener("mousemove",cursor.tracking.bind(cursor));
-canvas2.addEventListener("mousemove",draggingTool.drag.bind(draggingTool));
+appWindow.addEventListener("mousemove",draggingTool.drag.bind(draggingTool));
 canvas2.addEventListener("mouseup",draggingTool.endDrag.bind(draggingTool));
 
 document.getElementById("add-square-table").addEventListener("click",()=>{
     let table = new SquareTable(); 
     allTables.push(table);
     table.render(ctx);
-    refreshDisplays();
 });
+
 
 document.getElementById("add-round-table").addEventListener("click",()=>{
     let table = new RoundTable(); 
     allTables.push(table);
     table.render(ctx);
-    refreshDisplays();
 });
 
-document.getElementById("add-chair").addEventListener("click",()=>{
+document.getElementById("add-chair-btn").addEventListener("click",()=>{
     selectedObject.addChair();
-    document.getElementById("tableInfo").innerHTML = `chairs: ${selectedObject.chairs.length} / ${selectedObject.maxChairs}`;
-    refreshDisplays();
-})
+});
 
-document.getElementById("remove-chair").addEventListener("click",()=>{
-    clearContext(ctx2);
-    let chair = selectedObject.removeChair();
-    allChairs.splice(allChairs.indexOf(chair),1);
-    document.getElementById("tableInfo").innerHTML = `chairs: ${selectedObject.chairs.length} / ${selectedObject.maxChairs}`;
-    refreshDisplays();
-})
+document.getElementById("remove-chair-btn").addEventListener("click",()=>{
+    if(selectedObject.chairs.length > 0){
+        let chair = selectChairToRemove();
+        removeChair(chair);
+        
+    }
+});
 
 for(btn of document.getElementsByName("rotate-table")){
     btn.addEventListener("click",rotateTable);
+};
+
+for(btn of document.getElementsByName("remove-selected-chair-btn")){
+    btn.addEventListener("click",()=>{
+        removeChair(selectedObject);
+        selectedObject = false;
+        popupsMenager.disablePopup();
+        renderAll();
+    })
 }
 
-document.getElementById("change-table-mode").addEventListener("click",changeTableMode);
-document.getElementById("remove-table").addEventListener("click",removeTable);
-document.getElementById("copy-table").addEventListener("click",copyTable);
-document.getElementById("add-quest").addEventListener("click",questsList.addQuest.bind(questsList));
+
+document.getElementById("change-mode-btn").addEventListener("click",changeTableMode);
+document.getElementById("remove-table-btn").addEventListener("click",removeTable);
+document.getElementById("copy-table-btn").addEventListener("click",copyTable);
+document.getElementById("add-quest-btn").addEventListener("click",questsList.add.bind(questsList));
+document.getElementById("quest-edit-list").addEventListener("click",questsList.EnableEditMode.bind(questsList));
+document.getElementById("quest-seat-list").addEventListener("click",questsList.DisableEditMode.bind(questsList));
+document.getElementById("accept-quest-edit").addEventListener("click",questsList.editQuest.bind(questsList));
+document.getElementById("remove-quest-btn").addEventListener("click",questsList.removeQuest.bind(questsList));
+
+document.getElementById("edit-quest-on-chair-btn").addEventListener("click",()=>{
+    let quest = selectedObject.quest;
+    questsList.EnableEditMode(quest);
+    questsList.refreshEditWindow();
+    popupsMenager.activeById("edit-quest-tool");
+
+});
+
+document.getElementById("kick-from-chair-btn").addEventListener("click",()=>{
+    selectedObject.quest.leaveSeat();
+    chairTools.show(selectedObject);
+});
 
 popupsMenager.loadPopups();
+
+
+// Canvas colors & shadows
+ctx.fillStyle = "#c48545";
+ctx2.fillStyle = "#9b6bb4";
+ctx.shadowColor = '#8b8b8b85';
+ctx.shadowBlur = 5;
+ctx.shadowOffsetX = 2;
+ctx.shadowOffsetY = 2;
+ctx2.shadowColor = '#8b8b8b85';
+ctx2.shadowBlur = 5;
+ctx2.shadowOffsetX = 2;
+ctx2.shadowOffsetY = 2;
+
+
+
