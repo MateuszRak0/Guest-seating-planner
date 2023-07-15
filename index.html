@@ -1,151 +1,271 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planer-stolow-weselnych</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Wedding Seat Organizer</title>
+    <link rel="stylesheet" href="css/planner-style.css">
     <link rel="stylesheet" href="css/fontello.css">
-
-    
+    <script src="core.js" defer></script>
 </head>
+
 <body>
     <div id="app-window">
 
-        <div class="small-display-box">
-            <span class="small-display questCount">0</span>
-            <span class="small-display chairCount">0</span>
-            <span class="small-display tableCount">0</span>
+        <canvas id="layer2" width="2600" height="2600"></canvas>
+        <canvas id="layer1" width="2600" height="2600"></canvas>
+
+        <div id="top-bar">
+            <button class="accentBtn litle-shadow" name="show-popup-btn" value="quest-list-window" id="quest-edit-list">Lista Gości</button>
+            <button class="accentBtn litle-shadow" name="show-popup-btn" value="weeding-tools-menu">Narzędzia</button>
+            <button class="accentBtn litle-shadow" name="show-popup-btn" value="add-table-menu">Dodaj Stół</button>
         </div>
 
-        <canvas id="second-canvas" width="2600" height="2600"></canvas>
-        <canvas id="main-canvas" width="2600" height="2600"></canvas> 
-<!-- Tool bar -->
-        <div id="tool-bar" class="row">
-
-            <span class="tool-bar-button">
-                Lista Gości
-                <ul class="hiden-menu">
-                    <li><button type="button" class="tool-bar-button" name="show-popup-button" value="quest-list-edit">Edytuj</button></li>
-                    <li><button type="button" class="tool-bar-button">Podgląd</button></li>
-                </ul>
-            </span>
-
-            <span class="tool-bar-button">
-                Dodaj stół
-                <ul class="hiden-menu">
-                    <li><button type="button" class="tool-bar-button" id="add-square-table">Kwadratowy</button></li>
-                    <li><button type="button" class="tool-bar-button" id="add-round-table">Okrągły</button></li>
-                </ul>
-            </span>
-
-            <button type="button" class="tool-bar-button">Kalkulator Imprezowy</button>
-            <button type="button" class="tool-bar-button">Widok</button>
-        </div>
-<!-- Table edit menu -->
-        <div class="small-tool-bar" id="table-edit-menu">
-            <span id="tableInfo"></span>
-            <span class="center-text">
-                <button type="button" name="rotate-table" value="1">
-                    <i class="icon-ccw" value="1"></i>
-                    <span>Obróć w lewo</span>
+        <!-- Add Table menu -->
+        <div class="popup" id="add-table-menu">
+            <div class="space space-left">
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
                 </button>
-                <button type="button" name="rotate-table" value="-1">
-                    <i class="icon-cw" value="-1"></i>
-                    <span>Obróć w prawo</span>
-                </button>
-            </span>
-            <button type="button" id="change-table-mode">
-                <i class="icon-wrench"></i>
-                <span>Zmień tryb stołu</span>
-            </button>
-            <button type="button" id="add-chair">
-                <i class="icon-user-plus"></i>
-                <span>Dodaj krzesło</span>
-            </button>
-            <button type="button" id="remove-chair">
-                <i class="icon-user-times"></i>
-                <span>Usuń krzesło</span>
-            </button>
-            <button type="button" id="copy-table">
-                <i class="icon-docs"></i>
-                <span>Kopiuj Stół</span>
-            </button>
-            <button type="button" id="remove-table">
-                <i class="icon-trash"></i>
-                <span>Usuń stół</span>
-            </button>
-        </div>
+            </div>
 
-<!-- Chair edit menu -->
-<div class="small-tool-bar" id="chair-edit-menu">
-    <span id="chairInfo"></span>
-    <button type="button" id="change-table-mode">
-        <i class="icon-wrench"></i>
-        <span>Ustawienia</span>
-    </button>
-    <button type="button" name="show-popup-button" value="quest-fast-list">
-        <i class="icon-user-plus"></i>
-        <span>Dodaj osobe</span>
-    </button>
-    <button type="button" id="remove-chair">
-        <i class="icon-user-times"></i>
-        <span>Usuń osobe</span>
-    </button>
-    <button type="button" id="remove-table">
-        <i class="icon-trash"></i>
-        <span>Usuń krzesło</span>
-    </button>
-</div>
+            <span class="smallTitle">Dodaj Stół</span>
 
-<!-- Popup windows  -->
-        <div class="popup" name="quest-list-edit">
-            <button type="button" class="popup-disbtn"></button>
-            <span class="bigTitle">Lista Gości</span>
-            <span class="questCount">0</span>
-            <input type="search" list="search-options" placeholder="Szukaj Gościa">
-            <datalist id="search-options">
-            </datalist>
-            <ol class="quest-table" id="quest-big-list"></ol>
-
-            <form>
-                <input  id="quest-name-input" type="text" placeholder="Imię">
-                <input id="quest-lastName-input" type="text" placeholder="Nazwisko">
-                <button type="button" id="add-quest">Dodaj do listy</button>
-                <span name="addQuestMessege"></span>
-            </form>
-        </div>
-        <div class="popup" name="quest-fast-list">
-            <button type="button" class="popup-disbtn"></button>
-            <span class="smallTitle">Kto ma tu siedzieć ?</span>
-            <input type="search" list="search-options" placeholder="Szukaj Gościa">
-            <button type="button">Szukaj</button>
-            
-            <div id="quest-small-list">
+            <div class="symetric-mesh">
+                <button type="button" class="squareBtn" id="add-round-table" name="disable-popup-btn">Okrągły Stół</button>
+                <button type="button" class="squareBtn" id="add-square-table" name="disable-popup-btn">Prostokątny Stół</button>
+                <button class="squareBtn" disabled>Stolik wiejski</button>
+                <button class="squareBtn" disabled>Parkiet Taneczny</button>
             </div>
         </div>
 
+        <!-- Weeding Tools menu -->
+        <div class="popup" id="weeding-tools-menu">
+            <div class="space space-left">
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
 
-        <div class="popup" name="change-view">
-            <button type="button" class="popup-disbtn"></button>
-            <span class="bigTitle">Lista Gości</span>
-            <span class="questCount">0</span>
-            <input type="search" list="search-options" placeholder="Szukaj Gościa">
-            <datalist id="search-options">
-            </datalist>
-            <ol class="quest-table" id="quest-big-list"></ol>
+            <span class="smallTitle">Narzędzia ślubne</span>
 
-            <form>
-                <input  id="quest-name-input" type="text" placeholder="Imię">
-                <input id="quest-lastName-input" type="text" placeholder="Nazwisko">
-                <button type="button" id="add-quest">Dodaj do listy</button>
-                <span name="addQuestMessege"></span>
+            <div class="symetric-mesh">
+                <button class="squareBtn" disabled>Kalkulator kosztów sali</button>
+                <button class="squareBtn" disabled>Ile potrzebuje alkoholu ?</button>
+                <button class="squareBtn" disabled>Kreator Winetek</button>
+                <button class="squareBtn" disabled>Kreator Tablicy stołów</button>
+            </div>
+        </div>
+
+        <!-- Free chair tools -->
+        <div class="popup" id="chair-tools-free">
+            <div class="space">
+                <button class="transparent-button">
+                    <i class="icon-lock"></i>
+                </button>
+
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+
+            <span class="smallTitle">Krzesło</span>
+            <span class="circled chair-ID">
+                00
+            </span>
+
+            <span class="greenText">Wolne</span>
+
+            <button class="tool-btn" type="button" name="show-popup-btn" value="quest-list-window" id="quest-seat-list">
+                <i class="icon-user-plus"></i>
+                Dodaj osobe
+            </button>
+
+            <button class="tool-btn" type="button">
+                <i class="icon-wrench"></i>
+                Typ siedzenia
+            </button>
+
+            <button class="tool-btn" type="button" name="remove-selected-chair-btn">
+                <i class="icon-trash-empty"></i>
+                Usuń krzesło
+            </button>
+        </div>
+
+        <!-- Chair Tools  BUSY -->
+        <div class="popup" id="chair-tools-occupied">
+            <div class="space">
+                <button class="transparent-button">
+                    <i class="icon-lock"></i>
+                </button>
+
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+            <span class="smallTitle">Krzesło</span>
+            <span class="circled chair-ID">
+                00
+            </span>
+            <div id="quest-on-chair">
+                <span>Agnieszka</span>
+                <span>Włodarczuk</span>
+            </div>
+
+            <button class="tool-btn" type="button" id="kick-from-chair-btn">
+                <i class="icon-user-times"></i>
+                Wykop z krzesła
+            </button>
+
+            <button class="tool-btn" type="button" id="edit-quest-on-chair-btn">
+                <i class="icon-address-book-o"></i>
+                Edytuj Osobe
+            </button>
+
+            <button class="tool-btn" type="button">
+                <i class="icon-wrench"></i>
+                Typ siedzenia
+            </button>
+
+            <button class="tool-btn" type="button" name="remove-selected-chair-btn">
+                <i class="icon-trash-empty"></i>
+                Usuń krzesło
+            </button>
+        </div>
+
+        <!-- Table Tools -->
+        <div class="popup" id="table-tools">
+
+            <div class="space">
+                <button class="transparent-button">
+                    <i class="icon-lock"></i>
+                </button>
+
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+
+            <span class="smallTitle">Stolik</span>
+            <span class="circled" id="tableID">
+                47
+            </span>
+
+            <button class="tool-btn" type="button" name="rotate-table" value="1">
+                <i class="icon-ccw" value="1"></i>
+                Obróć w lewo
+            </button>
+
+            <button class="tool-btn" type="button" name="rotate-table" value="-1">
+                <i class="icon-cw" value="-1"></i>
+                Obróć w prawo
+            </button>
+
+
+            <button class="tool-btn" type="button" id="add-chair-btn">
+                <i class="icon-plus-squared-alt "></i>
+                Dodaj krzesło
+            </button>
+
+            <button class="tool-btn" type="button" id="remove-chair-btn">
+                <i class="icon-minus-squared-alt"></i>
+                Usuń krzesło
+            </button>
+
+            <button class="tool-btn" type="button" id="change-mode-btn">
+                <i class="icon-wrench"></i>
+                Układ siedzeń
+            </button>
+
+            <button class="tool-btn" type="button" id="copy-table-btn"> 
+                <i class="icon-docs"></i>
+                Kopiuj Stół
+            </button>
+
+            <button class="tool-btn" type="button" id="remove-table-btn" name="disable-popup-btn">
+                <i class="icon-trash-empty"></i>
+                Usuń stół
+            </button>
+        </div>
+
+        <!-- Sys message -->
+        <div class="popup" id="system-message">
+            <span class="smallTitle">Tytuł Wiadomości</span>
+            <span>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ipsam blanditiis
+                sapiente illum! Eligendi, numquam libero.</span>
+            <button class="accentBtn">Rozumiem</button>
+        </div>
+
+        <!-- add Quest -->
+        <div class="popup" id="add-quest-tool">
+            <div class="space">
+                <button class="transparent-button" name="show-popup-btn" value="quest-list-window">
+                    <i class="icon-address-book-o"></i>
+                </button>
+
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+            <span class="smallTitle">Nowy Gość</span>
+            <form action="" class="column-center">
+                <input class="tool-input" type="text" placeholder="Imię" id="new-quest-name">
+                <input class="tool-input" type="text" placeholder="Nazwisko" id="new-quest-last-name">
+                <label for="remove-last-name-mode">
+                    <input type="checkbox" name="" id="remove-last-name-mode" class="accentCheckbox">
+                    <span class="small-text">Usuń nazwisko</span>
+                </label>
+                <button class="accentBtn" type="button" id="add-quest-btn">Dodaj</button>
+                <span id="quest-adding-result"></span>
             </form>
         </div>
 
+        <!-- edit Quest -->
+        <div class="popup" id="edit-quest-tool">
+            <div class="space">
+                <button class="transparent-button" name="show-popup-btn" value="quest-list-window">
+                    <i class="icon-address-book-o"></i>
+                </button>
+
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+            <span class="smallTitle">Edytuj Gościa</span>
+            <form action="" class="column-center">
+                <input class="tool-input" type="text" placeholder="Imię" id="edit-quest-name">
+                <input class="tool-input" type="text" placeholder="Nazwisko" id="edit-quest-last-name">
+                <span class="space">
+                    <button class="accentBtn" id="remove-quest-btn" type="button">Usuń</button>
+                    <button class="accentBtn" id="accept-quest-edit" name="return-popup-btn" type="button">Zapisz</button>
+                </span>
+            </form>
+        </div>
+
+        <!-- quest list -->
+        <div class="popup" id="quest-list-window">
+            <div class="space">
+                <button class="transparent-button" name="show-popup-btn" value="add-quest-tool">
+                    <i class="icon-user-plus"></i>
+                </button>
+
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+            <span class="smallTitle">Lista Gości</span>
+            <form action="" class="quest-search-bar">
+                <input type="search" placeholder="Szukaj gościa">
+                <button type="button">Szukaj</button>
+            </form>
+            <span id="list-mode">Wybierz i Edytuj</span>
+            <div class="custom-scrollbar" id="quest-list">
+                
+            </div>
+        </div>
 
     </div>
-    
-    <script src="table2.js"></script>
 </body>
+
 </html>
