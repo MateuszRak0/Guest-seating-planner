@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <div id="app-window">
+    <div id="app-window" class="custom-scrollbar">
 
         <canvas id="layer2" width="2600" height="2600"></canvas>
         <canvas id="layer1" width="2600" height="2600"></canvas>
@@ -61,7 +61,7 @@
         <!-- Free chair tools -->
         <div class="popup" id="chair-tools-free">
             <div class="space">
-                <button class="transparent-button">
+                <button class="transparent-button" name="object-lock-btn">
                     <i class="icon-lock"></i>
                 </button>
 
@@ -96,7 +96,7 @@
         <!-- Chair Tools  BUSY -->
         <div class="popup" id="chair-tools-occupied">
             <div class="space">
-                <button class="transparent-button">
+                <button class="transparent-button" name="object-lock-btn">
                     <i class="icon-lock"></i>
                 </button>
 
@@ -138,7 +138,7 @@
         <div class="popup" id="table-tools">
 
             <div class="space">
-                <button class="transparent-button">
+                <button class="transparent-button" name="object-lock-btn">
                     <i class="icon-lock"></i>
                 </button>
 
@@ -190,11 +190,22 @@
         </div>
 
         <!-- Sys message -->
-        <div class="popup" id="system-message">
-            <span class="smallTitle">Tytuł Wiadomości</span>
-            <span>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ipsam blanditiis
-                sapiente illum! Eligendi, numquam libero.</span>
-            <button class="accentBtn">Rozumiem</button>
+        <div class="column-center" id="system-message">
+            <div class="column-center custom-scrollbar">
+                <div class="space space-left">
+                    <button class="transparent-button" id="disable-message-btn">
+                        <i class="icon-cancel-circled"></i>
+                    </button>
+                </div>
+    
+                <span class="smallTitle" id="system-message-title"></span>
+                <span id="system-message-content">
+                    
+                </span>
+                <div>
+                    <button class="accentBtn" id="system-message-btn">Rozumiem</button>
+                </div>
+            </div>
         </div>
 
         <!-- add Quest -->
@@ -255,11 +266,17 @@
                 </button>
             </div>
             <span class="smallTitle">Lista Gości</span>
-            <form action="" class="quest-search-bar">
-                <input type="search" placeholder="Szukaj gościa">
-                <button type="button">Szukaj</button>
+            <form action="" class="quest-search-bar litle-shadow">
+                <input type="search" placeholder="Szukaj gościa" id="search-quest-input" list="quest-search-options">
+                <button type="button" id="search-quest-btn">Szukaj</button>
+
             </form>
+            <datalist id="quest-search-options">
+                    
+            </datalist>
+            
             <span id="list-mode">Wybierz i Edytuj</span>
+            <span class="small-text space space-left" id="quest-count-display">Goście 0</span>
             <div class="custom-scrollbar" id="quest-list">
                 
             </div>
