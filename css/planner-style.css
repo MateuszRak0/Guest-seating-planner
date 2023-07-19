@@ -71,7 +71,7 @@ body{
     align-items: center;
     position: fixed;
     z-index: 4;
-    top: 5%;
+    top: 3%;
     right: 3%;
     border-radius: 15px;
     -webkit-box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
@@ -80,10 +80,12 @@ body{
     background-color:#e1eff6 ;
     padding: 10px;
     max-height: 90%;
+    min-height: fit-content;
+    max-width: 80%;
     overflow-y: auto;
     overflow-x: hidden;
     min-width: fit-content;
-    transition: opacity .4s ease-in-out;
+    transition: all .4s ease-in-out;
     opacity: 0;
     visibility: hidden;
 }
@@ -94,9 +96,37 @@ body{
 }
 
 #system-message{
-    color: var(--text);
+    position: fixed;
+    z-index: 100;
+    right: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+    padding-bottom:10%;
+    transition: all .4s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+    overflow-y: auto;
+}
+
+
+#system-message .column-center{
+    background-color: #e1eff6;
     width: 20%;
+    max-height: 80%;
     min-width: 250px;
+    height: fit-content;
+    -webkit-box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
+    -moz-box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
+    box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
+    padding: 7px 20px;
+    text-align: center;
+    color: var(--text);
+    box-sizing: border-box;
+    border-radius: 10px;
+    overflow-y: auto;
 }
 
 #system-message .smallTitle{
@@ -135,6 +165,8 @@ body{
     padding: 0;
     background-color: transparent;
     color: #6f6f6f;
+    transition: color .2s linear;
+    font-size: 1rem;
 }
 
 .transparent-button:hover{
@@ -228,6 +260,45 @@ body{
     text-decoration: line-through;
 }
 
+.lockedElement{
+    color: var(--accent-1);
+}
+
+.lockedElement:hover{
+    color: #89bf7d;
+}
+
+.lockedElement::after{
+    content: "Zablokowany";
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.lockedElement:hover::after{
+    content: "Odblokuj";
+}
+
+/* Take attention */
+.take-attention{
+    animation: take-attention-anim ;
+    animation-iteration-count: infinite;
+    animation-duration: 2s;
+}
+
+@keyframes take-attention-anim{
+    0%{
+        transform: translateY(0px);
+    }
+    50%{
+        transform: translateY(30px);
+        
+    }
+    100%{
+        transform: translateY(0px);
+    }
+
+}
+
 /* Text / Shapes*/
 .smallTitle{
     text-align: center;
@@ -268,10 +339,6 @@ body{
     margin: 10px auto;
 }
 
-#quest-list-window{
-    border: 1px solid black;
-}
-
 #quest-list{
     overflow-x: hidden;
     overflow-y: auto;
@@ -284,6 +351,21 @@ body{
     width: 100%;
 }
 
+.quest-btn{
+    display: block;
+    text-align: center;
+    margin: 0 10%;
+    margin-top: 10px;
+    width: 80%;
+    border: none;
+    background-color: transparent;
+    border-bottom: 2px solid var(--accent-1);
+}
+
+.quest-btn:hover{
+    color: var(--accent-1);
+}
+
 /* Search Bar */
 .quest-search-bar{
     display: flex;
@@ -292,7 +374,6 @@ body{
     border: 2px solid #fff;
     background-color: #fff;
     margin: 0 auto;
-    overflow: hidden;
 }
 
 .quest-search-bar input[type="search"]{
@@ -317,6 +398,38 @@ body{
 
 .quest-search-bar button:active{
     transform: scale(1);
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar{
+    appearance: none;
+    background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner{
+    appearance: none;
+    background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track{
+    appearance: none;
+    background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track-piece{
+    appearance: none;
+    background-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb{
+    appearance: none;
+    background-color: #9b6bb4;
+    border:2px solid transparent;
+    border-radius: 10px;
+}
+
+#app-window::-webkit-scrollbar-thumb{
+    border-color: #fff;
 }
 
 
