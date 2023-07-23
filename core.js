@@ -6,6 +6,7 @@ const ctx2 = canvas2.getContext("2d");
 
 let allTables = [];
 let allChairs = [];
+let allAttractions = [];
 let selectedObject;
 
 let questsList = {
@@ -194,8 +195,8 @@ let dragScroll = {
         if(this.inDrag){
             let distanceX = cursor.x - this.startX;
             let distanceY = cursor.y - this.startY;
-            appWindow.scrollLeft = this.startScrollX + (distanceX/-2);
-            appWindow.scrollTop = this.startScrollY + (distanceY/-2);
+            appWindow.scrollLeft = this.startScrollX + (distanceX/-1.9);
+            appWindow.scrollTop = this.startScrollY + (distanceY/-1.9);
         }
     },
 
@@ -213,10 +214,10 @@ let draggingTool = {
 
     startDrag: function (object) {
         if (object) {
-            this.beforeDrag.x = object.centerX;
-            this.beforeDrag.y = object.centerY;
-            this.marginX = cursor.x - object.centerX;
-            this.marginY = cursor.y - object.centerY;
+            this.beforeDrag.x = object.shape.centerX;
+            this.beforeDrag.y = object.shape.centerY;
+            this.marginX = cursor.x - object.shape.centerX;
+            this.marginY = cursor.y - object.shape.centerY;
             this.dragedObj = object;
             clearContext(ctx2)
             renderAll(object);
@@ -227,8 +228,8 @@ let draggingTool = {
 
     drag: function () {
         if (this.dragedObj) {
-            this.dragedObj.centerX = cursor.x - this.marginX;
-            this.dragedObj.centerY = cursor.y - this.marginY;
+            this.dragedObj.shape.centerX = cursor.x - this.marginX;
+            this.dragedObj.shape.centerY = cursor.y - this.marginY;
             clearContext(ctx2);
             this.dragedObj.render(ctx2);
             if (this.dragedObj.constructor == Chair) {
@@ -241,11 +242,8 @@ let draggingTool = {
     endDrag: function () {
         if (this.dragedObj) {
             if (this.dragedObj.constructor == Chair) {
-
                 let hoveredTable = selectObject([allTables]);
-
                 if (hoveredTable) {
-
                     if (hoveredTable != this.dragedObj.parent) {
                         replaceChair(hoveredTable);
                         this.dragedObj = false;
@@ -253,16 +251,16 @@ let draggingTool = {
 
                     else {
                         clearContext(ctx2);
-                        this.dragedObj.centerX = this.beforeDrag.x;
-                        this.dragedObj.centerY = this.beforeDrag.y;
-                        this.dragedObj.render(ctx2);
+                        this.dragedObj.shape.centerX = this.beforeDrag.x;
+                        this.dragedObj.shape.centerY = this.beforeDrag.y;
+                        this.dragedObj.shape.render(ctx2);
                         this.dragedObj = false;
                     }
                 }
 
                 else {
-                    this.dragedObj.centerX = this.beforeDrag.x;
-                    this.dragedObj.centerY = this.beforeDrag.y;
+                    this.dragedObj.shape.centerX = this.beforeDrag.x;
+                    this.dragedObj.shape.centerY = this.beforeDrag.y;
                     clearContext(ctx2);
                     this.dragedObj.render(ctx2);
                     this.dragedObj = false;
@@ -330,11 +328,10 @@ let popupsMenager = {
 let tableTools = {
     popup: "table-tools",
     idDisplay: document.getElementById("tableID"),
-    rotateBtn: document.getElementsByName("rotate-table"),
 
-    show: function (table) {
+    show: function () {
         popupsMenager.activeById(this.popup);
-        this.idDisplay.innerHTML = allTables.indexOf(table) + 1;
+        this.idDisplay.innerHTML = allTables.indexOf(selectedObject) + 1;
     },
 
 };
@@ -345,14 +342,14 @@ let chairTools = {
     idDisplays: document.getElementsByClassName("chair-ID"),
     questNameBox: document.getElementById("quest-on-chair"),
 
-    show: function (chair) {
-        let index = allChairs.indexOf(chair) + 1;
+    show: function () {
+        let index = selectedObject.parent.chairs.indexOf(selectedObject) + 1;
         for (display of this.idDisplays) {
             display.innerHTML = index;
         }
 
-        if (chair.occupied) {
-            this.questNameBox.innerHTML = `<span>${chair.quest.fullName}</span>`;
+        if (selectedObject.occupied) {
+            this.questNameBox.innerHTML = `<span>${selectedObject.quest.fullName}</span>`;
             popupsMenager.activeById(this.popupBusy);
         }
         else {
@@ -363,6 +360,21 @@ let chairTools = {
     refreshName: function () {
         this.questNameBox.innerHTML = `<span>${selectedObject.quest.name}</span> <span>${selectedObject.quest.lastName}</span> `;
     }
+};
+
+let attractionsTools = {
+    popup: "attractions-tools",
+    idDisplay: document.getElementById("attraction-ID"),
+    nameDisplay:document.getElementById("attraction-name"),
+    shapeBtn:document.getElementById("change-shape-btn"),
+
+    show: function () {
+        (selectedObject.blockShape) ? this.shapeBtn.disabled = true : this.shapeBtn.disabled = false ;
+        popupsMenager.activeById(this.popup);
+        this.idDisplay.innerHTML = allAttractions.indexOf(selectedObject) + 1;
+        this.nameDisplay.innerHTML = selectedObject.name;
+    },
+
 };
 
 let systemMessenger = {
@@ -435,64 +447,27 @@ let padlock = {
 
 }
 
-// Constructors ( tables , quest , chair , other elements)
-function RoundTable(chairsCount = 2, sides = 1, rotation = 0) {
-    this.rotation = rotation;
-    this.chairs = [];
-    this.sides = sides;
+// Shapes of objects 
+function Circle(rotation,size){
     this.centerX = 150 + appWindow.scrollLeft;
     this.centerY = 150 + appWindow.scrollTop;
-    this.maxChairs = 16;
+    this.rotation = rotation;
+    this.size = size;
+    this.width = 0;
 
-    for (let startChairs = 0; startChairs < chairsCount; startChairs++) {
-        let chair = new Chair(this);
-        this.chairs.push(chair);
-    }
-
-    let multiper = this.sides * 1.9;
-    this.size = (this.chairs.length * (2 + multiper)) + 20;
-
-    this.render = function (ctx) {
+    this.render = function (ctx,stroke) {
         ctx.beginPath();
         ctx.arc(this.centerX, this.centerY, this.size / 2, 0, 2 * Math.PI);
-        ctx.fill();
-        if (this.locked) ctx.stroke();
-        this.countChairsPositions(ctx);
+        (stroke) ? ctx.stroke() : ctx.fill();
     };
+}
 
-    this.countChairsPositions = function (ctx) {
-        let step = (360 / this.sides) / this.chairs.length;
-        let angle = this.rotation;
-        let distance = (this.size + 5) - (this.chairs.length * 2);
-        for (let chair of this.chairs) {
-            let radians = angle * Math.PI / 180;
-            newX = this.centerX + (Math.sin(radians) * distance);
-            newY = this.centerY + (Math.cos(radians) * distance);
-            chair.centerX = newX;
-            chair.centerY = newY;
-            chair.radians = radians;
-            chair.render(ctx)
-            angle += step;
-        }
-    };
-
-    this.recalculate = function () {
-        clearContext(ctx2);
-        let multiper = this.sides * 1.9;
-        this.size = (this.chairs.length * (2 + multiper)) + 20;
-        this.render(ctx2);
-
-    };
-};
-
-function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
-    this.rotation = rotation;
-    this.chairs = [];
-    this.sides = sides;
-    this.width = 20 + (20 * this.sides);
+function Square(rotation,width,size){
     this.centerX = 150 + appWindow.scrollLeft;
     this.centerY = 150 + appWindow.scrollTop;
-    this.maxChairs = 100;
+    this.rotation = rotation;
+    this.size = size;
+    this.width = width; // constant 
     this.corners = {
         p1: null,
         p2: null,
@@ -500,28 +475,7 @@ function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
         p4: null,
         center1: null,
         center2: null,
-    }
-
-    for (let startChairs = 0; startChairs < chairsCount; startChairs++) {
-        let chair = new Chair(this);
-        this.chairs.push(chair);
-    }
-
-    this.size = ((this.chairs.length / (this.sides * 2)) * 40) + 20;
-
-    this.render = function (ctx) {
-        this.calculateCorenrs();
-        ctx.beginPath();
-        ctx.moveTo(this.corners.p1.x, this.corners.p1.y);
-        ctx.lineTo(this.corners.p2.x, this.corners.p2.y);
-        ctx.lineTo(this.corners.p3.x, this.corners.p3.y);
-        ctx.lineTo(this.corners.p4.x, this.corners.p4.y);
-        ctx.lineTo(this.corners.p1.x, this.corners.p1.y);
-        ctx.fill();
-        if (this.locked) ctx.stroke();
-        this.countChairsPositions(ctx);
     };
-
 
     this.countCorner = function (x, y, size, start = 0) {
         let radians = (this.rotation + start) * Math.PI / 180;
@@ -529,7 +483,6 @@ function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
         let y1 = y + Math.cos(radians) * size;
         return { x: x1, y: y1, ad: [x1, y1] };
     };
-
 
     this.calculateCorenrs = function () {
         let buffor = this.countCorner(this.centerX, this.centerY, this.width / 2, 270)
@@ -539,27 +492,114 @@ function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
         this.corners.p4 = this.countCorner(this.corners.p1.x, this.corners.p1.y, this.width, 90);
         this.corners.center2 = this.countCorner(this.centerX, this.centerY, this.width / 2, 90)
         this.corners.center1 = buffor;
+    };
+
+    this.render = function (ctx,stroke) {
+        this.calculateCorenrs();
+        ctx.beginPath();
+        ctx.moveTo(this.corners.p1.x, this.corners.p1.y);
+        ctx.lineTo(this.corners.p2.x, this.corners.p2.y);
+        ctx.lineTo(this.corners.p3.x, this.corners.p3.y);
+        ctx.lineTo(this.corners.p4.x, this.corners.p4.y);
+        ctx.lineTo(this.corners.p1.x, this.corners.p1.y);
+        (stroke) ? ctx.stroke() : ctx.fill();
+    };
+
+
+}
+
+// Constructors ( tables , quest , chair , Attractions)
+function RoundTable(chairsCount = 2, sides = 1, rotation = 0) {
+    this.sides = sides;
+    this.chairs = [];
+    this.maxChairs = 16;
+    this.tools = tableTools;
+
+    for (let startChairs = 0; startChairs < chairsCount; startChairs++) {
+        let chair = new Chair(this);
+        this.chairs.push(chair);
     }
+
+    let multiper = this.sides * 1.9;
+    let size = (this.chairs.length * (2 + multiper)) + 20;
+    this.shape = new Circle(rotation,size)
+
+    this.render = function (ctx){
+        this.shape.render(ctx);
+        this.countChairsPositions(ctx);
+    };
+
+    this.countChairsPositions = function (ctx){
+        let step = (360 / this.sides) / this.chairs.length;
+        let angle = this.shape.rotation;
+        let distance = (this.shape.size + 5) - (this.chairs.length * 2);
+        for (let chair of this.chairs) {
+            let radians = angle * Math.PI / 180;
+            newX = this.shape.centerX + (Math.sin(radians) * distance);
+            newY = this.shape.centerY + (Math.cos(radians) * distance);
+            chair.shape.centerX = newX;
+            chair.shape.centerY = newY;
+            chair.radians = radians;
+            chair.render(ctx);
+            angle += step;
+        }
+    };
+
+    this.recalculate = function () {
+        clearContext(ctx2);
+        let multiper = this.sides * 1.9;
+        this.shape.size = (this.chairs.length * (2 + multiper)) + 20;
+        this.render(ctx2);
+
+    };
+
+    this.changeMode = function(){
+        (this.sides == 2) ? this.sides = 1 : this.sides = 2;
+        selectedObject.recalculate();
+    }
+};
+
+function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
+    this.rotation = rotation;
+    this.chairs = [];
+    this.sides = sides;
+    this.maxChairs = 100;
+    this.tools = tableTools;
+
+    for (let startChairs = 0; startChairs < chairsCount; startChairs++) {
+        let chair = new Chair(this);
+        this.chairs.push(chair);
+    }
+
+    let size = ((this.chairs.length / (this.sides * 2)) * 40) + 20;
+    let width = 20 + (20 * this.sides);
+
+    this.shape = new Square(rotation,width,size)
+
+    this.render = function (ctx) {
+        this.shape.render(ctx);
+        this.countChairsPositions(ctx);
+    };
 
     this.countChairsPositions = function (ctx) {
         let oneSide = Math.ceil(this.chairs.length / this.sides);
-        let step = this.size / oneSide;
+        let step = this.shape.size / oneSide;
         let margin = step / 2;
         for (let i = 0; i < this.chairs.length; i++) {
             let chair = this.chairs[i];
             if (i < oneSide) {
                 let distance = margin + (step * i);
-                let point = this.countCorner(this.corners.p1.x, this.corners.p1.y, distance, 0);
-                point = this.countCorner(point.x, point.y, 20, -90);
-                chair.centerX = point.x;
-                chair.centerY = point.y;
+                let point = this.shape.countCorner(this.shape.corners.p1.x, this.shape.corners.p1.y, distance, 0);
+                point = this.shape.countCorner(point.x, point.y, 20, -90);
+                chair.shape.centerX = point.x;
+                chair.shape.centerY = point.y;
             }
             else {
                 let distance = margin + step * (i - oneSide);
-                let point = this.countCorner(this.corners.p4.x, this.corners.p4.y, distance, 0);
-                point = this.countCorner(point.x, point.y, 20, 90);
-                chair.centerX = point.x;
-                chair.centerY = point.y;
+                let point = this.shape.countCorner(this.shape.corners.p4.x, this.shape.corners.p4.y, distance, 0);
+                point = this.shape.countCorner(point.x, point.y, 20, 90);
+                chair.shape.centerX = point.x;
+                chair.shape.centerY = point.y;
             }
             chair.render(ctx)
         }
@@ -567,26 +607,27 @@ function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
 
     this.recalculate = function () {
         clearContext(ctx2);
-        this.size = ((this.chairs.length / (this.sides * 2)) * 40) + 20;
-        this.width = 20 + (20 * this.sides);
+        this.shape.size = ((this.chairs.length / (this.sides * 2)) * 40) + 20;
+        this.shape.width = 20 + (20 * this.sides);
         this.render(ctx2);
 
     };
+
+    this.changeMode = function(){
+        (this.sides == 2) ? this.sides = 1 : this.sides = 2;
+        selectedObject.recalculate();
+    }
 };
 
 function Chair(parent) {
     this.occupied = false;
     this.quest = false;
     this.parent = parent;
-    this.size = 22;
-    this.centerX;
-    this.centerY;
-    this.radians = 0;
+    this.shape = new Circle(0,22)
     allChairs.push(this);
+    this.tools = chairTools;
 
     this.render = function (ctx) {
-        ctx.beginPath();
-        ctx.arc(this.centerX, this.centerY, this.size / 2, 0, 2 * Math.PI);
         let lastColor = ctx.fillStyle;
         if (this != selectedObject) {
             if (this.occupied == true) {
@@ -596,15 +637,14 @@ function Chair(parent) {
                 ctx.fillStyle = "#89b52b";
             }
         }
-        ctx.fill();
+        this.shape.render(ctx);
         ctx.fillStyle = "#000";
-        ctx.fillText(allChairs.indexOf(this) + 1, this.centerX - 8, this.centerY + 3);
+        let text = `${this.parent.chairs.indexOf(this) + 1}`;
+        ctx.fillText(text,this.shape.centerX-(3*text.length), this.shape.centerY + 3);
         ctx.fillStyle = lastColor;
-
-        if (this.locked) ctx.stroke();
     };
 
-    this.disinfectAfterQuest = function () {
+    this.disinfectAfterQuest = function(){
         this.quest = false;
         this.occupied = false;
         this.render(ctx);
@@ -670,6 +710,71 @@ function Quest(name, lastName) {
 
 };
 
+function Attraction(data){
+    this.name = data.name;
+    this.multiper = data.multiper;
+    this.minSize = data.minSize;
+    this.maxSize = data.maxSize;
+    this.minWidth = data.minWidth;
+    this.onlyStroke = data.onlyStroke;
+    this.tools = attractionsTools;
+    this.blockShape = data.blockShape;
+    this.hideText = data.hideText;
+
+    if(data.circle){
+        this.shape = new Circle(0,data.size);
+    }
+    else{
+        this.shape = new Square(0,data.minWidth,data.size);
+    }
+
+    this.render = function(ctx){
+        if (!this.hideText) ctx.fillText(this.name,this.shape.centerX - this.name.length*3,this.shape.centerY);
+        this.shape.render(ctx,this.onlyStroke);
+    };
+
+    this.recalculate = function(noRender){
+        if(this.shape.size < this.minSize){
+            this.shape.size = this.minSize;
+        }
+        else if(this.shape.size > this.maxSize){
+            this.shape.size = this.maxSize
+        }
+
+        this.shape.width = this.shape.size * this.multiper;
+        if(this.shape.width < this.minWidth){
+            this.shape.width = this.minWidth;
+        }
+        if(!noRender){
+            clearContext(ctx2)
+            this.render(ctx2);
+        }
+        
+    };
+
+    this.resize = function(value){
+        if(typeof value === "string"){
+            this.shape.size += parseInt(value);
+            this.recalculate();
+        }
+    };
+
+    this.changeMode = function(){
+        let oldX = this.shape.centerX;
+        let oldY = this.shape.centerY;
+        if(this.shape.constructor == Circle){
+            this.shape = new Square(this.shape.rotation,this.shape.width,this.shape.size);
+        }
+        else{
+            this.shape = new Circle(this.shape.rotation,this.shape.size);
+        }
+        this.shape.centerX = oldX;
+        this.shape.centerY = oldY;
+        this.recalculate();
+    }
+    this.recalculate(true);
+}
+
 // Base Functions
 function checkStringsSimilarity(s1,s2){
     s1 = s1.toUpperCase();
@@ -682,8 +787,11 @@ function checkStringsSimilarity(s1,s2){
         let char2 = s2.charAt(i);
         let char3 = s2.charAt(i+1);
         
-        if(orgChar == char2 || orgChar == char1 || orgChar == char3){
+        if(orgChar == char2){
             result += weight;
+        }
+        else if (orgChar == char1 || orgChar == char3){
+            result += weight/1.2;
         }
     }
     return result;
@@ -695,7 +803,14 @@ function clearContext(ctx) {
 
 function renderAll(exception) {
     clearContext(ctx);
+
     allTables.forEach(object => {
+        if (object != exception) {
+            object.render(ctx);
+        }
+    })
+
+    allAttractions.forEach(object => {
         if (object != exception) {
             object.render(ctx);
         }
@@ -731,15 +846,15 @@ function isPointLeftOfEdge(x, y, edgeStart, edgeEnd) {
 function selectObject(lists) {
     for (let list of lists) {
         for (let object of list) {
-            if (object.constructor != SquareTable) {
-                let a = Math.abs(cursor.x - object.centerX);
-                let b = Math.abs(cursor.y - object.centerY);
+            if (object.shape.constructor != Square) {
+                let a = Math.abs(cursor.x - object.shape.centerX);
+                let b = Math.abs(cursor.y - object.shape.centerY);
                 let distance = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-                if (distance <= object.size / 2) return object;
+                if (distance <= object.shape.size / 2) return object;
 
             }
             else {
-                let res = isPointInsideRectangle(cursor.x, cursor.y, [object.centerX, object.centerY], object.corners.p1.ad, object.corners.p4.ad, object.corners.p3.ad, object.corners.p2.ad)
+                let res = isPointInsideRectangle(cursor.x, cursor.y, [object.shape.centerX, object.shape.centerY], object.shape.corners.p1.ad, object.shape.corners.p4.ad, object.shape.corners.p3.ad, object.shape.corners.p2.ad)
                 if (res) {
                     return object
                 }
@@ -749,7 +864,7 @@ function selectObject(lists) {
 }
 
 function mouseDown() {
-    let object = selectObject([allTables, allChairs]);
+    let object = selectObject([allTables, allChairs,allAttractions]);
     if (object) {
         selectedObject = object;
         if (!selectedObject.locked) {
@@ -757,7 +872,7 @@ function mouseDown() {
         }
         else {
             selectedObject.render(ctx2)
-            renderAll();
+            renderAll(selectedObject);
         }
 
     }
@@ -777,21 +892,14 @@ function mouseUp() {
     if (selectedObject) {
         padlock.refresh();
         draggingTool.endDrag();
-        if (selectedObject.constructor != Chair) {
-            tableTools.show(selectedObject);
-        }
-        else {
-            chairTools.show(selectedObject);
-        }
+        if(selectedObject.tools) selectedObject.tools.show();
     }
     dragScroll.end();
 
 }
 
 // Table tools \/
-
 function removeTable() {
-
     for (let chair of selectedObject.chairs) {
         if (chair.locked) {
             systemMessenger.show(msg_Error03);
@@ -813,26 +921,30 @@ function removeTable() {
     renderAll();
 }
 
-function rotateTable(event) {
+function removeAttraction() {
+    let index = allAttractions.indexOf(selectedObject);
+    allAttractions.splice(index, 1);
+    selectedObject = false;
+    clearContext(ctx2);
+    renderAll();
+    popupsMenager.disablePopup()
+}
+
+function rotateObject(event) {
     let direction = event.target.getAttribute("value");
     clearContext(ctx2);
-    selectedObject.rotation += (10 * direction);
-    if (selectedObject.rotation > 360) { selectedObject.rotation = 0; }
-    else if (selectedObject.rotation < 0) { selectedObject.rotation = 360; }
+    selectedObject.shape.rotation += (10 * direction);
+    if (selectedObject.shape.rotation > 360) { selectedObject.shape.rotation = 0; }
+    else if (selectedObject.shape.rotation < 0) { selectedObject.shape.rotation = 360; }
     selectedObject.render(ctx2);
 }
 
 function copyTable() {
-    let table = new selectedObject.constructor(selectedObject.chairs.length, selectedObject.sides, selectedObject.rotation);
-    table.centerX = selectedObject.centerX - 3;
-    table.centerY = selectedObject.centerY - 3;
+    let table = new selectedObject.constructor(selectedObject.chairs.length, selectedObject.sides, selectedObject.shape.rotation);
+    table.shape.centerX = selectedObject.shape.centerX - 3;
+    table.shape.centerY = selectedObject.shape.centerY - 3;
     allTables.push(table);
     renderAll();
-}
-
-function changeTableMode() {
-    (selectedObject.sides == 2) ? selectedObject.sides = 1 : selectedObject.sides = 2;
-    selectedObject.recalculate();
 }
 
 function replaceChair(newTable) {
@@ -877,7 +989,6 @@ appWindow.addEventListener("mouseleave",()=>{
     draggingTool.endDrag();
     dragScroll.end();
 });
-document.getElementById("change-mode-btn").addEventListener("click", changeTableMode);
 document.getElementById("copy-table-btn").addEventListener("click", copyTable);
 document.getElementById("add-quest-btn").addEventListener("click", questsList.add.bind(questsList));
 document.getElementById("quest-edit-list").addEventListener("click", questsList.EnableEditMode.bind(questsList));
@@ -892,6 +1003,7 @@ appWindow.addEventListener("mousemove",()=>{
     draggingTool.drag();
     dragScroll.scroll();
 });
+
 
 document.getElementById("add-square-table").addEventListener("click", () => {
     let table = new SquareTable();
@@ -929,11 +1041,11 @@ document.getElementById("remove-chair-btn").addEventListener("click", () => {
     }
 });
 
-for (let btn of document.getElementsByName("rotate-table")) {
-    btn.addEventListener("click", rotateTable);
+for (let btn of document.getElementsByName("rotate-object")){
+    btn.addEventListener("click", rotateObject);
 };
 
-for (let btn of document.getElementsByName("remove-selected-chair-btn")) {
+for (let btn of document.getElementsByName("remove-selected-chair-btn")){
     btn.addEventListener("click", () => {
         if (selectedObject.locked) {
             systemMessenger.show(msg_Error01);
@@ -947,14 +1059,23 @@ for (let btn of document.getElementsByName("remove-selected-chair-btn")) {
     })
 }
 
-for (let btn of document.getElementsByName("object-lock-btn")) {
+for (let btn of document.getElementsByName("object-lock-btn")){
     btn.addEventListener("click", padlock.lockObject.bind(padlock));
+}
+
+for(let btn of document.getElementsByName("change-mode-btn")){
+    btn.addEventListener( "click", ()=>{ selectedObject.changeMode() } )
+}
+
+for(let btn of document.getElementsByName("change-attraction-size-btn")){
+    btn.addEventListener("click",(e)=>{
+        selectedObject.resize(e.target.getAttribute("value"))
+    })
 }
 
 document.getElementById("remove-quest-btn").addEventListener("click", () => {
     systemMessenger.show(msg_BeforeRemove, questsList.removeQuest.bind(questsList));
 });
-
 
 document.getElementById("remove-table-btn").addEventListener("click", () => {
     if (selectedObject.locked) {
@@ -964,6 +1085,15 @@ document.getElementById("remove-table-btn").addEventListener("click", () => {
         systemMessenger.show(msg_BeforeRemove, removeTable);
     }
 
+});
+
+document.getElementById("remove-attraction-btn").addEventListener("click",()=>{
+    if (selectedObject.locked) {
+        systemMessenger.show(msg_Error01, popupsMenager.returnToLast);
+    }
+    else {
+        systemMessenger.show(msg_BeforeRemove, removeAttraction);
+    } 
 });
 
 document.getElementById("edit-quest-on-chair-btn").addEventListener("click", () => {
@@ -978,8 +1108,6 @@ document.getElementById("kick-from-chair-btn").addEventListener("click", () => {
     selectedObject.quest.leaveSeat();
     chairTools.show(selectedObject);
 });
-
-popupsMenager.loadPopups();
 
 
 // Canvas settings
@@ -998,7 +1126,85 @@ ctx2.shadowBlur = 5;
 ctx2.shadowOffsetX = 2;
 ctx2.shadowOffsetY = 2;
 
+// Attractions List
 
+const availableAttractions = {
+    a000:{
+        name:"Ściana",
+        multiper:0,
+        size:200,
+        minSize:100,
+        maxSize:700,
+        minWidth:30,
+        circle:false,
+        onlyStroke:false,
+        blockShape:true,
+        hideText:true,
+    },
+    a001:{
+        name:"Parkiet Taneczny",
+        multiper:.5,
+        size:200,
+        minSize:150,
+        maxSize:400,
+        minWidth:70,
+        circle:true,
+        onlyStroke:true,
+    },
+    a002:{
+        name:"Stół wiejski",
+        multiper:1,
+        size:40,
+        minSize:30,
+        maxSize:70,
+        minWidth:30,
+        circle:false,
+        onlyStroke:true,
+    },
+    a003:{
+        name:"Fotobudka",
+        multiper:1,
+        size:60,
+        minSize:40,
+        maxSize:80,
+        minWidth:40,
+        circle:false,
+        onlyStroke:true,
+    },
+    a004:{
+        name:"Scena",
+        multiper:.2,
+        size:80,
+        minSize:80,
+        maxSize:150,
+        minWidth:40,
+        circle:false,
+        onlyStroke:true,
+    },
+
+}
+
+
+let list = document.getElementById("objects-list");
+for(let id in availableAttractions){
+    let name = availableAttractions[id].name;
+    let btn = document.createElement("button");
+    btn.type = "button";
+    btn.value = id;
+    btn.innerHTML = name;
+    btn.classList.add("squareBtn");
+    btn.name = "disable-popup-btn";
+    btn.addEventListener("click",(e)=>{
+        let attractionData = availableAttractions[e.target.value];
+        if(attractionData){
+            let attraction = new Attraction(attractionData);
+            attraction.render(ctx2);
+            allAttractions.push(attraction);
+        }
+    })
+    list.appendChild(btn);
+}
+        
 
 // SYSTEM MESSAGES
 const msg_BeforeRemove = {
@@ -1087,9 +1293,9 @@ let tutorialRejectFunc_4 = function(){
     document.querySelector("button[value=add-table-menu]").classList.remove("take-attention");
 };
 
+
+popupsMenager.loadPopups();
 systemMessenger.show(msg_Tutorial1,tutorialAcceptFunc_1,false,false);
-
-
 
 
 let names = ["Aaran", "Aaren", "Aarez", "Aarman", "Aaron", "Aaron-James", "Aarron", "Aaryan", "Aaryn", "Aayan", "Aazaan", "Abaan", "Abbas", "Abdallah", "Abdalroof", "Abdihakim", "Abdirahman", "Abdisalam", "Abdul", "Abdul-Aziz", "Abdulbasir", "Abdulkadir", "Abdulkarem", "Abdulkhader", "Abdullah", "Abdul-Majeed", "Abdulmalik", "Abdul-Rehman", "Abdur", "Abdurraheem", "Abdur-Rahman", "Abdur-Rehmaan", "Abel", "Abhinav", "Abhisumant", "Abid", "Abir", "Abraham", "Abu", "Abubakar", "Ace", "Adain", "Adam", "Adam-James", "Addison", "Addisson", "Adegbola", "Adegbolahan", "Aden", "Adenn", "Adie", "Adil", "Aditya", "Adnan", "Adrian", "Adrien", "Aedan", "Aedin", "Aedyn", "Aeron", "Afonso", "Ahmad", "Ahmed", "Ahmed-Aziz", "Ahoua", "Ahtasham", "Aiadan", "Aidan", "Aiden", "Aiden-Jack", "Aiden-Vee", "Aidian", "Aidy", "Ailin", "Aiman", "Ainsley", "Ainslie", "Airen", "Airidas", "Airlie", "AJ", "Ajay", "A-Jay", "Ajayraj", "Akan", "Akram", "Al", "Ala", "Alan", "Alanas", "Alasdair", "Alastair", "Alber", "Albert", "Albie", "Aldred", "Alec", "Aled", "Aleem", "Aleksandar", "Aleksander", "Aleksandr", "Aleksandrs", "Alekzander", "Alessandro", "Alessio", "Alex", "Alexander", "Alexei", "Alexx", "Alexzander", "Alf", "Alfee", "Alfie", "Alfred", "Alfy", "Alhaji", "Al-Hassan", "Ali", "Aliekber", "Alieu", "Alihaider", "Alisdair", "Alishan", "Alistair", "Alistar", "Alister", "Aliyaan", "Allan", "Allan-Laiton", "Allen", "Allesandro", "Allister", "Ally", "Alphonse", "Altyiab", "Alum", "Alvern", "Alvin", "Alyas", "Amaan", "Aman", "Amani", "Ambanimoh", "Ameer", "Amgad", "Ami", "Amin", "Amir", "Ammaar", "Ammar", "Ammer", "Amolpreet", "Amos", "Amrinder", "Amrit", "Amro", "Anay", "Andrea", "Andreas", "Andrei", "Andrejs", "Andrew", "Andy", "Anees", "Anesu", "Angel", "Angelo", "Angus", "Anir", "Anis", "Anish", "Anmolpreet", "Annan", "Anndra", "Anselm", "Anthony", "Anthony-John", "Antoine", "Anton", "Antoni", "Antonio", "Antony", "Antonyo", "Anubhav", "Aodhan", "Aon", "Aonghus", "Apisai", "Arafat", "Aran", "Arandeep", "Arann", "Aray", "Arayan", "Archibald", "Archie", "Arda", "Ardal", "Ardeshir", "Areeb", "Areez", "Aref", "Arfin", "Argyle", "Argyll", "Ari", "Aria", "Arian", "Arihant", "Aristomenis", "Aristotelis", "Arjuna", "Arlo", "Armaan", "Arman", "Armen", "Arnab", "Arnav", "Arnold", "Aron", "Aronas", "Arran", "Arrham", "Arron", "Arryn", "Arsalan", "Artem", "Arthur", "Artur", "Arturo", "Arun", "Arunas", "Arved", "Arya", "Aryan", "Aryankhan", "Aryian", "Aryn", "Asa", "Asfhan", "Ash", "Ashlee-jay", "Ashley", "Ashton", "Ashton-Lloyd", "Ashtyn", "Ashwin", "Asif", "Asim", "Aslam", "Asrar", "Ata", "Atal", "Atapattu", "Ateeq", "Athol", "Athon", "Athos-Carlos", "Atli", "Atom", "Attila", "Aulay", "Aun", "Austen", "Austin", "Avani", "Averon", "Avi", "Avinash", "Avraham", "Awais", "Awwal", "Axel", "Ayaan", "Ayan", "Aydan", "Ayden", "Aydin", "Aydon", "Ayman", "Ayomide", "Ayren", "Ayrton", "Aytug", "Ayub", "Ayyub", "Azaan", "Azedine", "Azeem", "Azim", "Aziz", "Azlan", "Azzam", "Azzedine", "Babatunmise", "Babur", "Bader", "Badr", "Badsha"];
