@@ -43,6 +43,9 @@ body{
     left: 0;
     top: 0;
     padding: 0 7px;
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
 #top-bar .accentBtn{
@@ -156,7 +159,7 @@ body{
     flex-wrap: wrap;
     justify-content: space-around;
     overflow-y: auto;
-    width: 250px;
+    min-width: 250px;
 }
 
 /* inputs*/
@@ -174,7 +177,7 @@ body{
 }
 
 .tool-btn{
-    display: inline-block;
+    display: block;
     color: #6f6f6f;
     width: 100%;
     margin: 3px auto;
@@ -190,6 +193,15 @@ body{
     border-color: var(--accent-1);
     color: var(--accent-1);
     transform: scale(1.01);
+}
+
+.tool-btn:disabled{
+    visibility: hidden !important;
+    margin: 0;
+    height: 0;
+    padding: 0;
+    border: 0;
+    transition: all 0s linear !important;
 }
 
 
