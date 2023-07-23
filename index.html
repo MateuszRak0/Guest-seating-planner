@@ -19,7 +19,7 @@
         <div id="top-bar">
             <button class="accentBtn litle-shadow" name="show-popup-btn" value="quest-list-window" id="quest-edit-list">Lista Gości</button>
             <button class="accentBtn litle-shadow" name="show-popup-btn" value="weeding-tools-menu">Narzędzia</button>
-            <button class="accentBtn litle-shadow" name="show-popup-btn" value="add-table-menu">Dodaj Stół</button>
+            <button class="accentBtn litle-shadow" name="show-popup-btn" value="add-table-menu">Dodaj Obiekt</button>
         </div>
 
         <!-- Add Table menu -->
@@ -30,13 +30,11 @@
                 </button>
             </div>
 
-            <span class="smallTitle">Dodaj Stół</span>
+            <span class="smallTitle">Wybierz Stół lub Atrakcje</span>
 
-            <div class="symetric-mesh">
+            <div class="symetric-mesh" id="objects-list">
                 <button type="button" class="squareBtn" id="add-round-table" name="disable-popup-btn">Okrągły Stół</button>
                 <button type="button" class="squareBtn" id="add-square-table" name="disable-popup-btn">Prostokątny Stół</button>
-                <button class="squareBtn" disabled>Stolik wiejski</button>
-                <button class="squareBtn" disabled>Parkiet Taneczny</button>
             </div>
         </div>
 
@@ -152,12 +150,12 @@
                 47
             </span>
 
-            <button class="tool-btn" type="button" name="rotate-table" value="1">
+            <button class="tool-btn" type="button" name="rotate-object" value="1">
                 <i class="icon-ccw" value="1"></i>
                 Obróć w lewo
             </button>
 
-            <button class="tool-btn" type="button" name="rotate-table" value="-1">
+            <button class="tool-btn" type="button" name="rotate-object" value="-1">
                 <i class="icon-cw" value="-1"></i>
                 Obróć w prawo
             </button>
@@ -173,7 +171,7 @@
                 Usuń krzesło
             </button>
 
-            <button class="tool-btn" type="button" id="change-mode-btn">
+            <button class="tool-btn" type="button" name="change-mode-btn">
                 <i class="icon-wrench"></i>
                 Układ siedzeń
             </button>
@@ -280,6 +278,54 @@
             <div class="custom-scrollbar" id="quest-list">
                 
             </div>
+        </div>
+
+        <!-- Special Tools -->
+        <div class="popup" id="attractions-tools">
+            <div class="space">
+                <button class="transparent-button" name="object-lock-btn">
+                    <i class="icon-lock"></i>
+                </button>
+
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+
+            <span class="smallTitle" id="attraction-name">OBJ NAME</span>
+            <span class="circled" id="attraction-ID">
+                NUM
+            </span>
+
+            <button class="tool-btn" type="button" name="rotate-object" value="1">
+                <i class="icon-ccw" value="1"></i>
+                Obróć w lewo
+            </button>
+
+            <button class="tool-btn" type="button" name="rotate-object" value="-1">
+                <i class="icon-cw" value="-1"></i>
+                Obróć w prawo
+            </button>
+
+            <button class="tool-btn" type="button" name="change-attraction-size-btn" value="5">
+                <i class="icon-plus-squared-alt"></i>
+                Powiększ
+            </button>
+
+            <button class="tool-btn" type="button" name="change-attraction-size-btn" value="-5">
+                <i class="icon-minus-squared-alt"></i>
+                Pomniejsz
+            </button>
+
+            <button class="tool-btn" type="button" name="change-mode-btn" id="change-shape-btn">
+                <i class="icon-wrench"></i>
+                Zmień kształt
+            </button>
+
+            <button class="tool-btn" type="button" id="remove-attraction-btn">
+                <i class="icon-trash-empty"></i>
+                Usuń Obiekt
+            </button>
         </div>
 
     </div>
