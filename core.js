@@ -47,7 +47,7 @@ let questsList = {
                 this.resultDisplay.innerHTML = "Pomyślnie dodano ";
             }
             else {
-                quest.takeSeat();
+                quest.takeSeat(selectedObject);
                 chairTools.show(selectedObject);
             }
 
@@ -158,7 +158,7 @@ let questsList = {
                 popupsMenager.activeById("edit-quest-tool");
             }
             else {
-                this.selectedQuest.takeSeat();
+                this.selectedQuest.takeSeat(selectedObject);
                 popupsMenager.disablePopup();
             }
         }
@@ -233,37 +233,55 @@ let draggingTool = {
             clearContext(ctx2);
             this.dragedObj.render(ctx2);
             if (this.dragedObj.constructor == Chair) {
-                let obj = selectObject([allTables]);
-                if (obj && obj != this.dragedObj.parent) obj.render(ctx2); // focus table when drag chair over it
+                let obj = selectObject([allTables,allChairs],this.dragedObj);
+                if(obj){
+                    if(obj.constructor == Chair){
+                        obj.render(ctx2,true);
+                    }
+                    else if(obj != this.dragedObj.parent){
+                        obj.render(ctx2);
+                    }
+                }
             }
         }
+    },
+
+    putBack: function(){
+        this.dragedObj.shape.centerX = this.beforeDrag.x;
+        this.dragedObj.shape.centerY = this.beforeDrag.y;
+        clearContext(ctx2);
+        this.dragedObj.render(ctx2);
     },
 
     endDrag: function () {
         if (this.dragedObj) {
             if (this.dragedObj.constructor == Chair) {
-                let hoveredTable = selectObject([allTables]);
-                if (hoveredTable) {
-                    if (hoveredTable != this.dragedObj.parent) {
-                        replaceChair(hoveredTable);
-                        this.dragedObj = false;
-                    }
-
-                    else {
-                        clearContext(ctx2);
-                        this.dragedObj.shape.centerX = this.beforeDrag.x;
-                        this.dragedObj.shape.centerY = this.beforeDrag.y;
-                        this.dragedObj.shape.render(ctx2);
-                        this.dragedObj = false;
-                    }
+                let hoveredTable = selectObject([allTables],this.dragedObj.parent);
+                if (hoveredTable){
+                        if(hoveredTable.chairs.length+1 < hoveredTable.maxChairs){
+                            replaceChair(hoveredTable);
+                        }
+                        else{
+                            systemMessenger.show(msg_TableFull2);
+                            this.putBack();
+                        }
                 }
-
                 else {
-                    this.dragedObj.shape.centerX = this.beforeDrag.x;
-                    this.dragedObj.shape.centerY = this.beforeDrag.y;
-                    clearContext(ctx2);
-                    this.dragedObj.render(ctx2);
-                    this.dragedObj = false;
+                    let hoveredChair = selectObject([allChairs],this.dragedObj)
+                    if(hoveredChair){
+                        let quest1 = hoveredChair.quest;
+                        let quest2 = selectedObject.quest;
+                        if(quest1) quest1.leaveSeat();
+                        if(quest2) quest2.leaveSeat();
+                        if(quest1) quest1.takeSeat(selectedObject);
+                        if(quest2) quest2.takeSeat(hoveredChair);
+                        selectedObject = hoveredChair;
+                        clearContext(ctx2);
+                        renderAll();
+                    }
+                    else{
+                        this.putBack();
+                    }                  
                 }
             }
             this.dragedObj = false;
@@ -348,7 +366,7 @@ let chairTools = {
             display.innerHTML = index;
         }
 
-        if (selectedObject.occupied) {
+        if (selectedObject.quest) {
             this.questNameBox.innerHTML = `<span>${selectedObject.quest.fullName}</span>`;
             popupsMenager.activeById(this.popupBusy);
         }
@@ -494,7 +512,7 @@ function Square(rotation,width,size){
         this.corners.center1 = buffor;
     };
 
-    this.render = function (ctx,stroke) {
+    this.render = function (ctx,stroke){
         this.calculateCorenrs();
         ctx.beginPath();
         ctx.moveTo(this.corners.p1.x, this.corners.p1.y);
@@ -620,17 +638,16 @@ function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
 };
 
 function Chair(parent) {
-    this.occupied = false;
     this.quest = false;
     this.parent = parent;
     this.shape = new Circle(0,22)
     allChairs.push(this);
     this.tools = chairTools;
 
-    this.render = function (ctx) {
+    this.render = function (ctx,focus) {
         let lastColor = ctx.fillStyle;
-        if (this != selectedObject) {
-            if (this.occupied == true) {
+        if (this != selectedObject && !focus) {
+            if (this.quest) {
                 ctx.fillStyle = "#f73434";
             }
             else {
@@ -646,7 +663,6 @@ function Chair(parent) {
 
     this.disinfectAfterQuest = function(){
         this.quest = false;
-        this.occupied = false;
         this.render(ctx);
     };
 };
@@ -684,21 +700,18 @@ function Quest(name, lastName) {
         this.element.classList.remove("quest-hidden");
     }
 
-    this.takeSeat = function () {
-        if (selectedObject.constructor == Chair) {
-            if (!selectedObject.occupied && !this.seat) {
-                selectedObject.occupied = true;
-                selectedObject.quest = this;
-                this.seat = selectedObject;
-            }
+    this.takeSeat = function(seat) {
+        if(seat.constructor == Chair){
+            seat.quest = this;
+            this.seat = seat;
         }
     };
 
     this.leaveSeat = function () {
         if (this.seat) {
             this.seat.disinfectAfterQuest();
-            this.seat = false;
         }
+        this.seat = false;
     };
 
     this.leaveParty = function () {
@@ -711,6 +724,7 @@ function Quest(name, lastName) {
 };
 
 function Attraction(data){
+    this.id = data.id;
     this.name = data.name;
     this.multiper = data.multiper;
     this.minSize = data.minSize;
@@ -720,13 +734,14 @@ function Attraction(data){
     this.tools = attractionsTools;
     this.blockShape = data.blockShape;
     this.hideText = data.hideText;
-
+    let rotation = (data.rotation) ? data.rotation : 0;
     if(data.circle){
-        this.shape = new Circle(0,data.size);
+        this.shape = new Circle(rotation,data.size);
     }
     else{
-        this.shape = new Square(0,data.minWidth,data.size);
+        this.shape = new Square(rotation,data.minWidth,data.size);
     }
+
 
     this.render = function(ctx){
         if (!this.hideText) ctx.fillText(this.name,this.shape.centerX - this.name.length*3,this.shape.centerY);
@@ -771,7 +786,8 @@ function Attraction(data){
         this.shape.centerX = oldX;
         this.shape.centerY = oldY;
         this.recalculate();
-    }
+    };
+
     this.recalculate(true);
 }
 
@@ -843,22 +859,25 @@ function isPointLeftOfEdge(x, y, edgeStart, edgeEnd) {
     return crossProduct >= 0;
 }
 
-function selectObject(lists) {
+function selectObject(lists,ignore) {
     for (let list of lists) {
         for (let object of list) {
-            if (object.shape.constructor != Square) {
-                let a = Math.abs(cursor.x - object.shape.centerX);
-                let b = Math.abs(cursor.y - object.shape.centerY);
-                let distance = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-                if (distance <= object.shape.size / 2) return object;
-
-            }
-            else {
-                let res = isPointInsideRectangle(cursor.x, cursor.y, [object.shape.centerX, object.shape.centerY], object.shape.corners.p1.ad, object.shape.corners.p4.ad, object.shape.corners.p3.ad, object.shape.corners.p2.ad)
-                if (res) {
-                    return object
+            if(object != ignore){
+                if (object.shape.constructor != Square) {
+                    let a = Math.abs(cursor.x - object.shape.centerX);
+                    let b = Math.abs(cursor.y - object.shape.centerY);
+                    let distance = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+                    if (distance <= object.shape.size / 2) return object;
+    
+                }
+                else {
+                    let res = isPointInsideRectangle(cursor.x, cursor.y, [object.shape.centerX, object.shape.centerY], object.shape.corners.p1.ad, object.shape.corners.p4.ad, object.shape.corners.p3.ad, object.shape.corners.p2.ad)
+                    if (res) {
+                        return object
+                    }
                 }
             }
+
         }
     }
 }
@@ -910,8 +929,8 @@ function removeTable() {
     let index = allTables.indexOf(selectedObject);
     allTables.splice(index, 1);
     for (let chair of selectedObject.chairs) {
-        if (chair.occupied) {
-            chair.quest.leaveSeat() = false;
+        if (chair.quest){
+            chair.quest.leaveSeat();
         }
         let index = allChairs.indexOf(chair);
         allChairs.splice(index, 1);
@@ -947,6 +966,30 @@ function copyTable() {
     renderAll();
 }
 
+function copyAttraction(){
+    let parentData = {
+        id:selectedObject.id,
+        name:selectedObject.name,
+        multiper:selectedObject.multiper,
+        size:selectedObject.shape.size,
+        minSize:selectedObject.minSize,
+        maxSize:selectedObject.maxSize,
+        minWidth:selectedObject.minWidth,
+        circle:false,
+        onlyStroke:selectedObject.onlyStroke,
+        blockShape:selectedObject.blockShape,
+        hideText:selectedObject.hideText,
+        rotation:selectedObject.shape.rotation,
+    }
+    if(selectedObject.shape.constructor == Circle) parentData.circle = true;
+
+    let attraction = new Attraction(parentData);
+    attraction.shape.centerX = selectedObject.shape.centerX - 3;
+    attraction.shape.centerY = selectedObject.shape.centerY - 3;
+    attraction.render(ctx);
+    allAttractions.push(attraction);
+}
+
 function replaceChair(newTable) {
     let index = selectedObject.parent.chairs.indexOf(selectedObject);
     selectedObject.parent.chairs.splice(index, 1);
@@ -960,7 +1003,7 @@ function replaceChair(newTable) {
 function selectChairToRemove() {
     let NoLocked = [];
     for (let chair of selectedObject.chairs) {
-        if (!chair.occupied && !chair.locked) {
+        if (!chair.quest && !chair.locked) {
             return chair;
         }
         else if (!chair.locked) {
@@ -972,7 +1015,7 @@ function selectChairToRemove() {
 
 function removeChair(chair) {
     clearContext(ctx2);
-    if (chair.occupied) {
+    if (chair.quest) {
         chair.quest.leaveSeat();
     }
     let index = chair.parent.chairs.indexOf(chair)
@@ -989,7 +1032,9 @@ appWindow.addEventListener("mouseleave",()=>{
     draggingTool.endDrag();
     dragScroll.end();
 });
+
 document.getElementById("copy-table-btn").addEventListener("click", copyTable);
+document.getElementById("copy-attraction-btn").addEventListener("click",copyAttraction);
 document.getElementById("add-quest-btn").addEventListener("click", questsList.add.bind(questsList));
 document.getElementById("quest-edit-list").addEventListener("click", questsList.EnableEditMode.bind(questsList));
 document.getElementById("quest-seat-list").addEventListener("click", questsList.DisableEditMode.bind(questsList));
@@ -1071,6 +1116,9 @@ for(let btn of document.getElementsByName("change-attraction-size-btn")){
     btn.addEventListener("click",(e)=>{
         selectedObject.resize(e.target.getAttribute("value"))
     })
+    btn.addEventListener("mousedown",(e)=>{
+        selectedObject.resize(e.target.getAttribute("value"))
+    })
 }
 
 document.getElementById("remove-quest-btn").addEventListener("click", () => {
@@ -1130,11 +1178,12 @@ ctx2.shadowOffsetY = 2;
 
 const availableAttractions = {
     a000:{
+        id:"a000",
         name:"Ściana",
         multiper:0,
         size:200,
         minSize:100,
-        maxSize:700,
+        maxSize:1000,
         minWidth:30,
         circle:false,
         onlyStroke:false,
@@ -1142,16 +1191,18 @@ const availableAttractions = {
         hideText:true,
     },
     a001:{
+        id:"a001",
         name:"Parkiet Taneczny",
-        multiper:.5,
+        multiper:.6,
         size:200,
         minSize:150,
-        maxSize:400,
+        maxSize:500,
         minWidth:70,
         circle:true,
         onlyStroke:true,
     },
     a002:{
+        id:"a002",
         name:"Stół wiejski",
         multiper:1,
         size:40,
@@ -1162,6 +1213,7 @@ const availableAttractions = {
         onlyStroke:true,
     },
     a003:{
+        id:"a003",
         name:"Fotobudka",
         multiper:1,
         size:60,
@@ -1172,6 +1224,7 @@ const availableAttractions = {
         onlyStroke:true,
     },
     a004:{
+        id:"a004",
         name:"Scena",
         multiper:.2,
         size:80,
@@ -1234,6 +1287,12 @@ const msg_Error03 = {
 const msg_TableFull = {
     title: "Stolik jest pełny !",
     content: "Nie da rady stworzyć większego stołu tego typu ! ( Najbardziej pojemny jest stół prostokątny )",
+    button: "Rozumiem",
+};
+
+const msg_TableFull2 = {
+    title: "Stolik jest pełny !",
+    content: "Nie możesz przenieść krzesła do tego stołu ponieważ jest już pełny !",
     button: "Rozumiem",
 };
 
