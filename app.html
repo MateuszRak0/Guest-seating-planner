@@ -7,6 +7,8 @@
     <title>Wedding Seat Organizer</title>
     <link rel="stylesheet" href="css/planner-style.css">
     <link rel="stylesheet" href="css/fontello.css">
+    <link rel="stylesheet" href="css/shared-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <script src="core.js" defer></script>
 </head>
 
@@ -29,8 +31,8 @@
                     <i class="icon-cancel-circled"></i>
                 </button>
             </div>
-
-            <span class="smallTitle">Wybierz Stół lub Atrakcje</span>
+            <hr class="ornament">
+            <span class="smallTitle">Wybierz Stół lub atrakcje</span>
 
             <div class="symetric-mesh custom-scrollbar" id="objects-list">
                 <button type="button" class="squareBtn" id="add-round-table" name="disable-popup-btn">Okrągły Stół</button>
@@ -45,7 +47,7 @@
                     <i class="icon-cancel-circled"></i>
                 </button>
             </div>
-
+            <hr class="ornament">
             <span class="smallTitle">Narzędzia ślubne</span>
 
             <div class="symetric-mesh">
@@ -68,7 +70,7 @@
                 </button>
             </div>
 
-            <span class="smallTitle">Krzesło</span>
+            <span class="smallTitle chair-type">Krzesło</span>
             <span class="circled chair-ID">
                 00
             </span>
@@ -80,7 +82,7 @@
                 Dodaj osobe
             </button>
 
-            <button class="tool-btn" type="button">
+            <button class="tool-btn" type="button" name="change-mode-btn">
                 <i class="icon-wrench"></i>
                 Typ siedzenia
             </button>
@@ -102,7 +104,7 @@
                     <i class="icon-cancel-circled"></i>
                 </button>
             </div>
-            <span class="smallTitle">Krzesło</span>
+            <span class="smallTitle chair-type">Krzesło</span>
             <span class="circled chair-ID">
                 00
             </span>
@@ -121,7 +123,7 @@
                 Edytuj Osobe
             </button>
 
-            <button class="tool-btn" type="button">
+            <button class="tool-btn" type="button" name="change-mode-btn">
                 <i class="icon-wrench"></i>
                 Typ siedzenia
             </button>
@@ -195,7 +197,7 @@
                         <i class="icon-cancel-circled"></i>
                     </button>
                 </div>
-    
+                <hr class="ornament">
                 <span class="smallTitle" id="system-message-title"></span>
                 <span id="system-message-content">
                     
@@ -264,17 +266,32 @@
                 </button>
             </div>
             <span class="smallTitle">Lista Gości</span>
-            <form action="" class="quest-search-bar litle-shadow">
+            <span action="" class="quest-search-bar litle-shadow">
                 <input type="search" placeholder="Szukaj gościa" id="search-quest-input" list="quest-search-options">
                 <button type="button" id="search-quest-btn">Szukaj</button>
 
-            </form>
+            </span>
             <datalist id="quest-search-options">
                     
             </datalist>
             
             <span id="list-mode">Wybierz i Edytuj</span>
-            <span class="small-text space space-left" id="quest-count-display">Goście 0</span>
+            <div class="space">
+                <select id="sortKey" class="tool-btn">
+                        <option value="name">Imię</option>
+                        <option value="lastName">Nazwisko</option>
+                        <option value="fullName" selected>Imię i nazwisko</option>
+                        <option value="id">Czas dodania</option>
+                </select>
+
+
+                <select id="sortDirection" class="tool-btn">
+                        <option value="1">Rosnąco</option>
+                        <option value="-1">Malejąco</option>
+                </select>
+            </div>
+            <span class="small-text" id="quest-count-display">Goście 0</span>
+            
             <div class="custom-scrollbar" id="quest-list">
                 
             </div>
