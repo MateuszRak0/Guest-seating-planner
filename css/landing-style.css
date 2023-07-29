@@ -1,0 +1,175 @@
+:root{
+    --accent1:#8d0222;
+}
+
+body{
+    margin: 0;
+    background: rgb(253,245,237);
+    background: radial-gradient(circle, rgba(253,245,237,1) 0%, rgba(255,240,227,1) 35%, rgba(250,235,219,1) 100%);
+}
+
+.page-section{
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 4%;
+}
+
+.to-center{
+    width: 60%;
+    margin: auto;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.overlay{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+
+
+/* Heart Button */
+.heart-btn{
+    outline: none;
+    border: none;
+    display: block;
+    font-family: 'Great Vibes', cursive;
+    background-color: var(--accent1);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 7px 15px;
+    border-radius: 10px;
+    transition: all .5s linear;
+    animation-name: pulse;
+    animation-duration: 1.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.heart-btn:hover{
+    background-color: #fff;
+    color: var(--accent1);
+}
+
+@keyframes pulse{
+    0%{
+        transform: scale(1);
+    }
+    50%{
+        transform: scale(1.03);
+    }
+    100%{
+        transform: scale(1);
+    }
+}
+
+/* font */
+
+.big-title{
+    font-size: 2rem;
+    font-weight: 600;
+    display: block;
+    font-family: 'Great Vibes', cursive;
+    margin-bottom: 20px;
+}
+
+
+/* Headers */
+h1{
+    font-family: 'Great Vibes', cursive;
+    font-size: 4rem;
+    padding: 15px;
+    margin-bottom: 0;
+    color: #2c2c2c;
+}
+
+h1 sup{
+    font-size: 2rem;
+    position: absolute;
+    transform: rotate(5deg);
+    color: var(--accent1);
+}
+
+
+
+h1 .big-title{
+    font-size: 1.7rem;
+}
+
+h1 span{
+    display: block;
+}
+
+h1 span:first-of-type{
+    border-bottom: 2px solid var(--accent1);
+    border-radius: 79% 21% 68% 32% / 93% 64% 36% 7% ;
+}
+
+/* Individual */
+
+#main-header{
+    min-height: 85vh;
+    height: fit-content;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+#main-header .overlay:first-of-type{
+    background-image: url(../img/main-header.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    z-index: 0;
+    filter: blur(1px);
+}
+
+#main-header .overlay:last-of-type{
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+
+#main-header .pulsating-btn{
+    margin: 3px auto;
+}
+
+#main-footer{
+    display: flex;
+    background-color:var(--accent1);
+    justify-content: space-around;
+    align-items: center;
+    color: #fff;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+#main-footer div{
+    text-align: center;
+    width: 30%;
+}
+
+#main-footer div ul{
+    list-style: none;
+}
+
+.app-window{
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    visibility: hidden;
+}
+
+.app-window-start{
+    visibility: visible;
+}
