@@ -29,8 +29,11 @@ let questsList = {
     editMode: true,
     editFromChair: false,
     clearLastName: false,
+    sortDirection:"1",
+    sortKey:"fullName",
+    
 
-    add: function () {
+    add: function (){
         let name = this.nameInput.value;
         let lastName = this.lastNameInput.value;
         if (this.nameValidator(name)) {
@@ -43,18 +46,25 @@ let questsList = {
 
             if (this.clearLastName) this.lastNameInput.value = "";
             if (this.editMode) {
-                quest.refresh();
                 this.resultDisplay.innerHTML = "Pomyślnie dodano ";
+                setTimeout(this.restartDisplay.bind(this),3000);
             }
             else {
                 quest.takeSeat(selectedObject);
                 chairTools.show(selectedObject);
             }
-
+            quest.refresh();
+            this.sort();
         }
         else {
             this.resultDisplay.innerHTML = "Imię jest wymagane !"
+            setTimeout(this.restartDisplay.bind(this),3000);
         }
+        
+    },
+
+    restartDisplay:function(){
+        this.resultDisplay.innerHTML = ""
     },
 
     EnableEditMode: function (quest) {
@@ -75,7 +85,24 @@ let questsList = {
         })
     },
 
-    filter: function (filterFunc) {
+    sort:function(){
+        let list = Object.values(this.quests);
+        list.sort(function(a, b){
+            if(a[questsList.sortKey] < b[questsList.sortKey]) { return questsList.sortDirection *-1; }
+            if(a[questsList.sortKey] > b[questsList.sortKey]) { return questsList.sortDirection; }
+            return 0;
+        });
+
+        list.forEach(quest =>{
+            this.listElement.removeChild(quest.element);
+        })
+
+        list.forEach(quest =>{
+            this.listElement.appendChild(quest.element);
+        })
+    },
+
+    filter: function (filterFunc){
         let sum = 0;
         for (let id in this.quests) {
             let quest = this.quests[id];
@@ -148,6 +175,7 @@ let questsList = {
             this.editFromChair = false;
             chairTools.refreshName();
         }
+        this.sort();
     },
 
     selectQuest: function (questBtn) {
@@ -195,8 +223,8 @@ let dragScroll = {
         if(this.inDrag){
             let distanceX = cursor.x - this.startX;
             let distanceY = cursor.y - this.startY;
-            appWindow.scrollLeft = this.startScrollX + (distanceX/-1.9);
-            appWindow.scrollTop = this.startScrollY + (distanceY/-1.9);
+            appWindow.scrollLeft = this.startScrollX + (distanceX/-1.5);
+            appWindow.scrollTop = this.startScrollY + (distanceY/-1.5);
         }
     },
 
@@ -269,15 +297,9 @@ let draggingTool = {
                 else {
                     let hoveredChair = selectObject([allChairs],this.dragedObj)
                     if(hoveredChair){
-                        let quest1 = hoveredChair.quest;
-                        let quest2 = selectedObject.quest;
-                        if(quest1) quest1.leaveSeat();
-                        if(quest2) quest2.leaveSeat();
-                        if(quest1) quest1.takeSeat(selectedObject);
-                        if(quest2) quest2.takeSeat(hoveredChair);
-                        selectedObject = hoveredChair;
-                        clearContext(ctx2);
-                        renderAll();
+                        if(!switchChairs(hoveredChair)){
+                            this.putBack();
+                        }
                     }
                     else{
                         this.putBack();
@@ -340,7 +362,8 @@ let popupsMenager = {
             let id = this.lastShowed.getAttribute("id");
             this.activeById(id);
         }
-    }
+    },
+
 };
 
 let tableTools = {
@@ -358,6 +381,7 @@ let chairTools = {
     popupFree: "chair-tools-free",
     popupBusy: "chair-tools-occupied",
     idDisplays: document.getElementsByClassName("chair-ID"),
+    typeDysplays:document.getElementsByClassName("chair-type"),
     questNameBox: document.getElementById("quest-on-chair"),
 
     show: function () {
@@ -365,13 +389,22 @@ let chairTools = {
         for (display of this.idDisplays) {
             display.innerHTML = index;
         }
+        
+        this.refreshType();
 
         if (selectedObject.quest) {
-            this.questNameBox.innerHTML = `<span>${selectedObject.quest.fullName}</span>`;
+            this.refreshName();
             popupsMenager.activeById(this.popupBusy);
         }
         else {
             popupsMenager.activeById(this.popupFree);
+        }
+    },
+
+    refreshType: function(){
+        let name = (selectedObject.normalChair) ? "Krzesło" : "Krzeseło dla dziecka";
+        for (display of this.typeDysplays) {
+            display.innerHTML = name;
         }
     },
 
@@ -389,7 +422,14 @@ let attractionsTools = {
     show: function () {
         (selectedObject.blockShape) ? this.shapeBtn.disabled = true : this.shapeBtn.disabled = false ;
         popupsMenager.activeById(this.popup);
-        this.idDisplay.innerHTML = allAttractions.indexOf(selectedObject) + 1;
+        let num = 0;
+        for(let attraction of allAttractions){
+            if(attraction.name == selectedObject.name){
+                num++;
+                if(attraction == selectedObject) break
+            }
+        }
+        this.idDisplay.innerHTML = num;
         this.nameDisplay.innerHTML = selectedObject.name;
     },
 
@@ -532,6 +572,7 @@ function RoundTable(chairsCount = 2, sides = 1, rotation = 0) {
     this.chairs = [];
     this.maxChairs = 16;
     this.tools = tableTools;
+    this.color = "#c9c963";
 
     for (let startChairs = 0; startChairs < chairsCount; startChairs++) {
         let chair = new Chair(this);
@@ -543,6 +584,7 @@ function RoundTable(chairsCount = 2, sides = 1, rotation = 0) {
     this.shape = new Circle(rotation,size)
 
     this.render = function (ctx){
+        ctx.fillStyle = this.color;
         this.shape.render(ctx);
         this.countChairsPositions(ctx);
     };
@@ -583,6 +625,7 @@ function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
     this.sides = sides;
     this.maxChairs = 100;
     this.tools = tableTools;
+    this.color = "#c9c963";
 
     for (let startChairs = 0; startChairs < chairsCount; startChairs++) {
         let chair = new Chair(this);
@@ -595,6 +638,7 @@ function SquareTable(chairsCount = 2, sides = 2, rotation = 0) {
     this.shape = new Square(rotation,width,size)
 
     this.render = function (ctx) {
+        ctx.fillStyle = this.color;
         this.shape.render(ctx);
         this.countChairsPositions(ctx);
     };
@@ -643,17 +687,22 @@ function Chair(parent) {
     this.shape = new Circle(0,22)
     allChairs.push(this);
     this.tools = chairTools;
+    this.normalChair = true;
 
     this.render = function (ctx,focus) {
         let lastColor = ctx.fillStyle;
-        if (this != selectedObject && !focus) {
-            if (this.quest) {
-                ctx.fillStyle = "#f73434";
-            }
-            else {
+        if (this.quest) {
+            ctx.fillStyle = "#f73434";
+        }
+        else {
+            if(this.normalChair){
                 ctx.fillStyle = "#89b52b";
             }
+            else{
+                ctx.fillStyle = "#fa75e6";
+            }
         }
+
         this.shape.render(ctx);
         ctx.fillStyle = "#000";
         let text = `${this.parent.chairs.indexOf(this) + 1}`;
@@ -665,6 +714,13 @@ function Chair(parent) {
         this.quest = false;
         this.render(ctx);
     };
+
+    this.changeMode = function(){
+        (this.normalChair) ? this.normalChair = false : this.normalChair = true;
+        chairTools.refreshType();
+        clearContext(ctx2)
+        this.render(ctx2)
+    }
 };
 
 function Quest(name, lastName) {
@@ -700,15 +756,16 @@ function Quest(name, lastName) {
         this.element.classList.remove("quest-hidden");
     }
 
-    this.takeSeat = function(seat) {
+    this.takeSeat = function(seat){
         if(seat.constructor == Chair){
             seat.quest = this;
             this.seat = seat;
+            seat.render(ctx2);
         }
     };
 
     this.leaveSeat = function () {
-        if (this.seat) {
+        if(this.seat) {
             this.seat.disinfectAfterQuest();
         }
         this.seat = false;
@@ -734,6 +791,7 @@ function Attraction(data){
     this.tools = attractionsTools;
     this.blockShape = data.blockShape;
     this.hideText = data.hideText;
+    this.color = data.color;
     let rotation = (data.rotation) ? data.rotation : 0;
     if(data.circle){
         this.shape = new Circle(rotation,data.size);
@@ -744,8 +802,10 @@ function Attraction(data){
 
 
     this.render = function(ctx){
-        if (!this.hideText) ctx.fillText(this.name,this.shape.centerX - this.name.length*3,this.shape.centerY);
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = this.color;
         this.shape.render(ctx,this.onlyStroke);
+        if (!this.hideText) writeText(this.name,ctx,this.shape.centerX,this.shape.centerY);
     };
 
     this.recalculate = function(noRender){
@@ -917,7 +977,17 @@ function mouseUp() {
 
 }
 
-// Table tools \/
+function writeText(text,ctx,x,y){
+    let lastColor = ctx.fillStyle;
+    let splited = text.split(" ");
+    for(let partOfText of splited){
+        let line = splited.indexOf(partOfText);
+        ctx.fillText(partOfText,x - 2 - (3*partOfText.length), y + (line * 12));
+    }
+    ctx.fillStyle = lastColor;
+}
+
+// tools \/
 function removeTable() {
     for (let chair of selectedObject.chairs) {
         if (chair.locked) {
@@ -960,8 +1030,8 @@ function rotateObject(event) {
 
 function copyTable() {
     let table = new selectedObject.constructor(selectedObject.chairs.length, selectedObject.sides, selectedObject.shape.rotation);
-    table.shape.centerX = selectedObject.shape.centerX - 3;
-    table.shape.centerY = selectedObject.shape.centerY - 3;
+    table.shape.centerX = selectedObject.shape.centerX - 1;
+    table.shape.centerY = selectedObject.shape.centerY - 1;
     allTables.push(table);
     renderAll();
 }
@@ -980,12 +1050,13 @@ function copyAttraction(){
         blockShape:selectedObject.blockShape,
         hideText:selectedObject.hideText,
         rotation:selectedObject.shape.rotation,
+        color:selectedObject.color,
     }
     if(selectedObject.shape.constructor == Circle) parentData.circle = true;
 
     let attraction = new Attraction(parentData);
-    attraction.shape.centerX = selectedObject.shape.centerX - 3;
-    attraction.shape.centerY = selectedObject.shape.centerY - 3;
+    attraction.shape.centerX = selectedObject.shape.centerX - 1;
+    attraction.shape.centerY = selectedObject.shape.centerY - 1;
     attraction.render(ctx);
     allAttractions.push(attraction);
 }
@@ -998,6 +1069,25 @@ function replaceChair(newTable) {
     newTable.chairs.push(selectedObject);
     newTable.recalculate();
     renderAll();
+}
+
+function switchChairs(hoveredChair){
+    if(!hoveredChair.locked && !selectedObject.locked){
+        let quest1 = hoveredChair.quest;
+        let quest2 = selectedObject.quest;
+        if(quest1) quest1.leaveSeat();
+        if(quest2) quest2.leaveSeat();
+        if(quest1) quest1.takeSeat(selectedObject);
+        if(quest2) quest2.takeSeat(hoveredChair);
+        selectedObject = hoveredChair;
+        clearContext(ctx2);
+        renderAll();
+        return true;
+    }
+    else{
+        systemMessenger.show(msg_Error04);
+        return false;
+    }
 }
 
 function selectChairToRemove() {
@@ -1044,11 +1134,19 @@ document.getElementById("search-quest-btn").addEventListener("click", questsList
 document.getElementById("system-message-btn").addEventListener("click", systemMessenger.accept.bind(systemMessenger));
 document.getElementById("disable-message-btn").addEventListener("click", systemMessenger.reject.bind(systemMessenger));
 
+document.getElementById("sortKey").addEventListener("input",(e)=>{
+    questsList.sortKey = e.target.value;
+    questsList.sort();
+})
+document.getElementById("sortDirection").addEventListener("input",(e)=>{
+    questsList.sortDirection = e.target.value;
+    questsList.sort();
+})
+
 appWindow.addEventListener("mousemove",()=>{
     draggingTool.drag();
     dragScroll.scroll();
 });
-
 
 document.getElementById("add-square-table").addEventListener("click", () => {
     let table = new SquareTable();
@@ -1159,20 +1257,16 @@ document.getElementById("kick-from-chair-btn").addEventListener("click", () => {
 
 
 // Canvas settings
-ctx.strokeStyle = "#b84f4b";
-ctx2.strokeStyle = "#b84f4b";
 ctx.font = '12px monospace';
 ctx2.font = '12px monospace';
-ctx.fillStyle = "#c48545";
-ctx2.fillStyle = "#9b6bb4";
 ctx.shadowColor = '#8b8b8b85';
 ctx.shadowBlur = 5;
 ctx.shadowOffsetX = 2;
 ctx.shadowOffsetY = 2;
-ctx2.shadowColor = '#8b8b8b85';
+ctx2.shadowColor = '#8d0222';
 ctx2.shadowBlur = 5;
-ctx2.shadowOffsetX = 2;
-ctx2.shadowOffsetY = 2;
+ctx2.shadowOffsetX = 0;
+ctx2.shadowOffsetY = 0;
 
 // Attractions List
 
@@ -1189,6 +1283,7 @@ const availableAttractions = {
         onlyStroke:false,
         blockShape:true,
         hideText:true,
+        color:"#424a61"
     },
     a001:{
         id:"a001",
@@ -1200,6 +1295,7 @@ const availableAttractions = {
         minWidth:70,
         circle:true,
         onlyStroke:true,
+        color:"#cc4700"
     },
     a002:{
         id:"a002",
@@ -1211,17 +1307,19 @@ const availableAttractions = {
         minWidth:30,
         circle:false,
         onlyStroke:true,
+        color:"#7d4643"
     },
     a003:{
         id:"a003",
         name:"Fotobudka",
         multiper:1,
         size:60,
-        minSize:40,
-        maxSize:80,
+        minSize:60,
+        maxSize:100,
         minWidth:40,
         circle:false,
         onlyStroke:true,
+        color:"#7d4643"
     },
     a004:{
         id:"a004",
@@ -1233,6 +1331,7 @@ const availableAttractions = {
         minWidth:40,
         circle:false,
         onlyStroke:true,
+        color:"#00c2cc"
     },
 
 }
@@ -1281,6 +1380,12 @@ const msg_Error02 = {
 const msg_Error03 = {
     title: "Krzesła zablokowane",
     content: "Nie można usunąc tego stołu ponieważ któreś z jego krzeseł jest zablokowane ",
+    button: "Rozumiem",
+};
+
+const msg_Error04 = {
+    title: "Zamiana niemożliwa",
+    content: "Któreś z wybranych do zamiany krzeseł jest zablokowane !",
     button: "Rozumiem",
 };
 
@@ -1355,11 +1460,3 @@ let tutorialRejectFunc_4 = function(){
 
 popupsMenager.loadPopups();
 systemMessenger.show(msg_Tutorial1,tutorialAcceptFunc_1,false,false);
-
-
-let names = ["Aaran", "Aaren", "Aarez", "Aarman", "Aaron", "Aaron-James", "Aarron", "Aaryan", "Aaryn", "Aayan", "Aazaan", "Abaan", "Abbas", "Abdallah", "Abdalroof", "Abdihakim", "Abdirahman", "Abdisalam", "Abdul", "Abdul-Aziz", "Abdulbasir", "Abdulkadir", "Abdulkarem", "Abdulkhader", "Abdullah", "Abdul-Majeed", "Abdulmalik", "Abdul-Rehman", "Abdur", "Abdurraheem", "Abdur-Rahman", "Abdur-Rehmaan", "Abel", "Abhinav", "Abhisumant", "Abid", "Abir", "Abraham", "Abu", "Abubakar", "Ace", "Adain", "Adam", "Adam-James", "Addison", "Addisson", "Adegbola", "Adegbolahan", "Aden", "Adenn", "Adie", "Adil", "Aditya", "Adnan", "Adrian", "Adrien", "Aedan", "Aedin", "Aedyn", "Aeron", "Afonso", "Ahmad", "Ahmed", "Ahmed-Aziz", "Ahoua", "Ahtasham", "Aiadan", "Aidan", "Aiden", "Aiden-Jack", "Aiden-Vee", "Aidian", "Aidy", "Ailin", "Aiman", "Ainsley", "Ainslie", "Airen", "Airidas", "Airlie", "AJ", "Ajay", "A-Jay", "Ajayraj", "Akan", "Akram", "Al", "Ala", "Alan", "Alanas", "Alasdair", "Alastair", "Alber", "Albert", "Albie", "Aldred", "Alec", "Aled", "Aleem", "Aleksandar", "Aleksander", "Aleksandr", "Aleksandrs", "Alekzander", "Alessandro", "Alessio", "Alex", "Alexander", "Alexei", "Alexx", "Alexzander", "Alf", "Alfee", "Alfie", "Alfred", "Alfy", "Alhaji", "Al-Hassan", "Ali", "Aliekber", "Alieu", "Alihaider", "Alisdair", "Alishan", "Alistair", "Alistar", "Alister", "Aliyaan", "Allan", "Allan-Laiton", "Allen", "Allesandro", "Allister", "Ally", "Alphonse", "Altyiab", "Alum", "Alvern", "Alvin", "Alyas", "Amaan", "Aman", "Amani", "Ambanimoh", "Ameer", "Amgad", "Ami", "Amin", "Amir", "Ammaar", "Ammar", "Ammer", "Amolpreet", "Amos", "Amrinder", "Amrit", "Amro", "Anay", "Andrea", "Andreas", "Andrei", "Andrejs", "Andrew", "Andy", "Anees", "Anesu", "Angel", "Angelo", "Angus", "Anir", "Anis", "Anish", "Anmolpreet", "Annan", "Anndra", "Anselm", "Anthony", "Anthony-John", "Antoine", "Anton", "Antoni", "Antonio", "Antony", "Antonyo", "Anubhav", "Aodhan", "Aon", "Aonghus", "Apisai", "Arafat", "Aran", "Arandeep", "Arann", "Aray", "Arayan", "Archibald", "Archie", "Arda", "Ardal", "Ardeshir", "Areeb", "Areez", "Aref", "Arfin", "Argyle", "Argyll", "Ari", "Aria", "Arian", "Arihant", "Aristomenis", "Aristotelis", "Arjuna", "Arlo", "Armaan", "Arman", "Armen", "Arnab", "Arnav", "Arnold", "Aron", "Aronas", "Arran", "Arrham", "Arron", "Arryn", "Arsalan", "Artem", "Arthur", "Artur", "Arturo", "Arun", "Arunas", "Arved", "Arya", "Aryan", "Aryankhan", "Aryian", "Aryn", "Asa", "Asfhan", "Ash", "Ashlee-jay", "Ashley", "Ashton", "Ashton-Lloyd", "Ashtyn", "Ashwin", "Asif", "Asim", "Aslam", "Asrar", "Ata", "Atal", "Atapattu", "Ateeq", "Athol", "Athon", "Athos-Carlos", "Atli", "Atom", "Attila", "Aulay", "Aun", "Austen", "Austin", "Avani", "Averon", "Avi", "Avinash", "Avraham", "Awais", "Awwal", "Axel", "Ayaan", "Ayan", "Aydan", "Ayden", "Aydin", "Aydon", "Ayman", "Ayomide", "Ayren", "Ayrton", "Aytug", "Ayub", "Ayyub", "Azaan", "Azedine", "Azeem", "Azim", "Aziz", "Azlan", "Azzam", "Azzedine", "Babatunmise", "Babur", "Bader", "Badr", "Badsha"];
-
-for(let name of names){
-    questsList.nameInput.value = name;
-    questsList.add();
-}
