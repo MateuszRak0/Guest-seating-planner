@@ -1,5 +1,5 @@
 :root{
-    --accent-1:#9b6bb4;
+    --accent-1:#8d0222;
     --text:#6f6f6f;
 }
 
@@ -25,9 +25,9 @@ body{
 #layer1{
     position: relative;
     z-index: 1;
-    background: repeating-linear-gradient(90deg, #e9e2e2 0, #e9e2e2 5%, transparent 0, transparent 50%), repeating-linear-gradient(180deg, #e9e2e2 0, #e9e2e2 5%, transparent 0, transparent 50%);
+    background: repeating-linear-gradient(90deg, #d2d2d2 0, #e9e2e2 5%, transparent 0, transparent 50%), repeating-linear-gradient(180deg, #e9e2e2 0, #e9e2e2 5%, transparent 0, transparent 50%);
     background-size: 1em 1em;
-    background-color: #ffffff;
+    background-color: #fcf5f5;
 }
 
 #layer2{
@@ -49,22 +49,12 @@ body{
 }
 
 #top-bar .accentBtn{
-    background-color: #fff;
-}
-
-#top-bar .accentBtn:hover{
-    background-color: var(--accent-1);
-}
-
-#top-bar .accentBtn:last-of-type{
-    background-color: var(--accent-1);
-    color: #fff;
-}
-
-#top-bar .accentBtn:last-of-type:hover{
-    background-color: transparent;
-    color: var(--accent-1);
-    border-color: var(--accent-1);
+    background-color: #fdf5ed;
+    font-family: cursive;
+    font-weight:600;
+    font-size: 1rem;
+    border: none;
+    border-bottom: 2px solid #e3e3e3;
 }
 
 /* Popup Windows */
@@ -80,7 +70,8 @@ body{
     -webkit-box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
     -moz-box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
     box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
-    background-color:#e1eff6 ;
+    background: #fdf5ed;
+    background: radial-gradient(circle, rgba(253,245,237,1) 0%, rgba(255,240,227,1) 35%, rgba(250,235,219,1) 100%);
     padding: 10px;
     max-height: 90%;
     min-height: fit-content;
@@ -91,6 +82,7 @@ body{
     transition: all .4s ease-in-out;
     opacity: 0;
     visibility: hidden;
+    border: 5px dotted rgb(253,245,237);
 }
 
 .popup-active{
@@ -116,8 +108,9 @@ body{
 
 
 #system-message .column-center{
-    background-color: #e1eff6;
-    width: 20%;
+    background: rgb(253,245,237);
+    background: radial-gradient(circle, rgba(253,245,237,1) 0%, rgba(255,240,227,1) 35%, rgba(250,235,219,1) 100%);
+    width: 30%;
     max-height: 80%;
     min-width: 250px;
     height: fit-content;
@@ -133,6 +126,8 @@ body{
 }
 
 #system-message .smallTitle{
+    font-size: 1.7rem;
+    font-weight: 600;
     margin: 10px auto;
 }
 
@@ -160,6 +155,8 @@ body{
     justify-content: space-around;
     overflow-y: auto;
     min-width: 250px;
+    width: 300px;
+    max-width: 80vw;
 }
 
 /* inputs*/
@@ -173,7 +170,7 @@ body{
 }
 
 .transparent-button:hover{
-    color: #b36bb4;
+    color: var(--accent-1);
 }
 
 .tool-btn{
@@ -185,7 +182,7 @@ body{
     border-radius: 7px;
     background-color: transparent;
     border: 2px solid;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-family: cursive;
     
 }
 
@@ -209,14 +206,16 @@ body{
     display: inline-block;
     border: none;
     padding: 4px 8px;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-family: cursive;
     font-weight: 600;
+    font-size: 1rem;
     color: var(--accent-1);
     border: 2px solid var(--accent-1);
     border-radius: 10px;
     background-color: transparent;
     margin: 7px auto;
     transition: all .4s linear;
+    
 }
 
 .accentBtn:hover{
@@ -259,6 +258,7 @@ body{
     font-weight: 700;
     color: var(--text);
     background-color: transparent;
+    font-family: cursive;
 }
 
 .squareBtn:hover{
@@ -314,10 +314,13 @@ body{
 /* Text / Shapes*/
 .smallTitle{
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: #3f3f3f;
     margin: 5px auto;
+    font-family: 'Great Vibes', cursive;
+    border-bottom: 2px solid var(--accent-1);
+    border-radius: 79% 21% 68% 32% / 93% 64% 36% 7% ;
 }
 
 .small-text{
@@ -335,6 +338,7 @@ body{
     border: 3px solid var(--accent-1);
     font-weight: 600;
     margin: 5px auto;
+    font-family: 'Great Vibes', cursive;
 }
 
 .greenText{
@@ -371,7 +375,7 @@ body{
     width: 80%;
     border: none;
     background-color: transparent;
-    border-bottom: 2px solid var(--accent-1);
+    border-bottom: 1px solid #000000;
 }
 
 .quest-btn:hover{
@@ -435,7 +439,7 @@ body{
 
 .custom-scrollbar::-webkit-scrollbar-thumb{
     appearance: none;
-    background-color: #9b6bb4;
+    background-color: #65656558;
     border:2px solid transparent;
     border-radius: 10px;
 }
