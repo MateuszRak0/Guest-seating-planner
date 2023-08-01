@@ -1,4 +1,5 @@
-const appWindow = document.getElementById("app-window");
+// Modules
+const appWindow = document.getElementById("app-window-inside");
 const canvas = document.getElementById("layer1");
 const canvas2 = document.getElementById("layer2");
 const ctx = canvas.getContext("2d");
@@ -202,9 +203,15 @@ let cursor = {
     x: 0,
     y: 0,
 
-    tracking: function (event) {
-        this.x = event.offsetX;
-        this.y = event.offsetY;
+    tracking: function (event){
+        if(event instanceof MouseEvent){
+            this.x = event.offsetX;
+            this.y = event.offsetY;
+        }
+        else if(event instanceof TouchEvent){
+            this.x = event.targetTouches[0].pageX + appWindow.scrollLeft;
+            this.y = event.targetTouches[0].pageY + appWindow.scrollTop;
+        }
     }
 };
 
@@ -749,11 +756,11 @@ function Quest(name, lastName) {
     };
 
     this.hide = function () {
-        this.element.classList.add("quest-hidden");
+        this.element.classList.add("element-hidden");
     }
 
     this.show = function () {
-        this.element.classList.remove("quest-hidden");
+        this.element.classList.remove("element-hidden");
     }
 
     this.takeSeat = function(seat){
@@ -1091,16 +1098,16 @@ function switchChairs(hoveredChair){
 }
 
 function selectChairToRemove() {
-    let NoLocked = [];
+    let noLocked = [];
     for (let chair of selectedObject.chairs) {
         if (!chair.quest && !chair.locked) {
             return chair;
         }
         else if (!chair.locked) {
-            NoLocked.push(chair);
+            noLocked.push(chair);
         }
     }
-    return NoLocked[0]; // if no found free chair remove first busy but not locked
+    return noLocked[0]; // if no found free chair remove first busy but not locked
 };
 
 function removeChair(chair) {
@@ -1123,6 +1130,15 @@ appWindow.addEventListener("mouseleave",()=>{
     dragScroll.end();
 });
 
+appWindow.addEventListener("touchmove", function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+}, false);
+
+canvas2.addEventListener("touchstart", mouseDown);
+canvas2.addEventListener("touchmove", cursor.tracking.bind(cursor));
+canvas2.addEventListener("touchend", mouseUp);
+
 document.getElementById("copy-table-btn").addEventListener("click", copyTable);
 document.getElementById("copy-attraction-btn").addEventListener("click",copyAttraction);
 document.getElementById("add-quest-btn").addEventListener("click", questsList.add.bind(questsList));
@@ -1133,6 +1149,11 @@ document.getElementById("remove-last-name-mode").addEventListener("input", quest
 document.getElementById("search-quest-btn").addEventListener("click", questsList.search.bind(questsList));
 document.getElementById("system-message-btn").addEventListener("click", systemMessenger.accept.bind(systemMessenger));
 document.getElementById("disable-message-btn").addEventListener("click", systemMessenger.reject.bind(systemMessenger));
+document.getElementById("exit-btn").addEventListener("click",()=>{
+    systemMessenger.show(msg_exit,()=>{
+            document.getElementsByName
+    })
+})
 
 document.getElementById("sortKey").addEventListener("input",(e)=>{
     questsList.sortKey = e.target.value;
@@ -1144,6 +1165,11 @@ document.getElementById("sortDirection").addEventListener("input",(e)=>{
 })
 
 appWindow.addEventListener("mousemove",()=>{
+    draggingTool.drag();
+    dragScroll.scroll();
+});
+
+appWindow.addEventListener("touchmove",()=>{
     draggingTool.drag();
     dragScroll.scroll();
 });
@@ -1399,6 +1425,12 @@ const msg_TableFull2 = {
     title: "Stolik jest pełny !",
     content: "Nie możesz przenieść krzesła do tego stołu ponieważ jest już pełny !",
     button: "Rozumiem",
+};
+
+const msg_exit = {
+    title: "Czy na pewno chcesz wyjść ?",
+    content: "Jeżeli opuścisz planer twoje postępy nie zostaną zapisane !",
+    button: "Tak chcę wyjść",
 };
 
 // Tutorial
