@@ -8,7 +8,7 @@ body{
     margin: 0;
 }
 
-#app-window{
+#app-window-inside{
     position: absolute;
     top: 0;
     left: 0;
@@ -46,6 +46,8 @@ body{
     user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
+    width: 95%;
+
 }
 
 #top-bar .accentBtn{
@@ -82,7 +84,7 @@ body{
     transition: all .4s ease-in-out;
     opacity: 0;
     visibility: hidden;
-    border: 5px dotted rgb(253,245,237);
+    border: 5px dotted rgb(253, 250, 246);
 }
 
 .popup-active{
@@ -444,11 +446,45 @@ body{
     border-radius: 10px;
 }
 
-#app-window::-webkit-scrollbar-thumb{
+#app-window-inside::-webkit-scrollbar-thumb{
     border-color: #fff;
 }
 
+.form-box{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    border-top: 5px dotted rgb(253, 250, 246);
+}
 
+.form-box label{
+    padding: 5px;
+    box-sizing: border-box;
+    display: block;
+    margin: 3px 10px;
+    border: none;
+}
+
+.form-box label .tool-btn{
+    width: 80%;
+    text-align: center;
+}
+
+.form-box input[type=number]::-webkit-inner-spin-button {
+    appearance: none;
+  }
+
+#suggested-alcohol-list div{
+    margin: 5px;
+    text-align: center;
+    padding: 10px;
+    border-radius: 15px;
+    border: 2px solid var(--accent-1);
+}
+
+#suggested-alcohol-list div p{
+    margin: 2px auto;
+}
 /* others */
 
 #quest-on-chair span{
@@ -463,6 +499,37 @@ body{
     box-shadow: 2px 2px 7px 0px rgba(41, 41, 41, 0.5);
 }
 
-.quest-hidden{
-    display: none;
+.element-hidden{
+    height: 0 !important;
+    overflow: hidden;
+    opacity: 0;
+}
+
+#exit-btn{
+    display: inline-block;
+    margin-left: auto;
+    margin-right: 5px;
+}
+
+#marriage-calculator-result .space{
+    width: 100%;
+    justify-content: space-around;
+}
+
+#marriage-calculator .accentBtn:disabled{
+    color: #6f6f6f;
+    border-color: #6f6f6f;
+    opacity: .4;
+}
+
+.calculator-optional-forms{
+    transition: opacity 1s linear;
+}
+
+#marriage-calculator .symetric-mesh{
+    padding-bottom: 10px;
+    min-height: 20px !important;
+    overflow-y: hidden;
+    width: 100%;
+
 }
