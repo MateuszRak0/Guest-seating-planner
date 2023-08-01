@@ -10,22 +10,27 @@
     <link rel="stylesheet" href="css/shared-style.css">
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <script src="core.js" defer></script>
+    <script src="scripts/calculator.js" defer></script>
 </head>
 
 <body>
-    <div id="app-window" class="custom-scrollbar">
+    <div id="app-window-inside" class="custom-scrollbar">
 
         <canvas id="layer2" width="2600" height="2600"></canvas>
         <canvas id="layer1" width="2600" height="2600"></canvas>
 
-        <div id="top-bar">
-            <button class="accentBtn litle-shadow" name="show-popup-btn" value="quest-list-window" id="quest-edit-list">Lista Gości</button>
-            <button class="accentBtn litle-shadow" name="show-popup-btn" value="weeding-tools-menu">Narzędzia</button>
-            <button class="accentBtn litle-shadow" name="show-popup-btn" value="add-table-menu">Dodaj Obiekt</button>
+        <div id="top-bar" class="space">
+            <div>
+                <button class="accentBtn litle-shadow" name="show-popup-btn" value="quest-list-window" id="quest-edit-list">Lista Gości</button>
+                <button class="accentBtn litle-shadow" name="show-popup-btn" value="weeding-tools-menu">Narzędzia</button>
+                <button class="accentBtn litle-shadow" name="show-popup-btn" value="add-table-menu">Dodaj Obiekt</button>
+            </div>
+            
+            <button class="accentBtn litle-shadow" id="exit-btn">Wyjdź</button>
         </div>
 
         <!-- Add Table menu -->
-        <div class="popup" id="add-table-menu">
+        <div class="popup custom-scrollbar" id="add-table-menu">
             <div class="space space-left">
                 <button class="transparent-button" name="disable-popup-btn">
                     <i class="icon-cancel-circled"></i>
@@ -41,7 +46,7 @@
         </div>
 
         <!-- Weeding Tools menu -->
-        <div class="popup" id="weeding-tools-menu">
+        <div class="popup custom-scrollbar" id="weeding-tools-menu">
             <div class="space space-left">
                 <button class="transparent-button" name="disable-popup-btn">
                     <i class="icon-cancel-circled"></i>
@@ -51,15 +56,13 @@
             <span class="smallTitle">Narzędzia ślubne</span>
 
             <div class="symetric-mesh">
-                <button class="squareBtn" disabled>Kalkulator kosztów sali</button>
-                <button class="squareBtn" disabled>Ile potrzebuje alkoholu ?</button>
+                <button class="squareBtn" name="show-popup-btn" value="marriage-calculator">Kalkulator Weselny</button>
                 <button class="squareBtn" disabled>Kreator Winetek</button>
                 <button class="squareBtn" disabled>Kreator Tablicy stołów</button>
             </div>
         </div>
-
         <!-- Free chair tools -->
-        <div class="popup" id="chair-tools-free">
+        <div class="popup custom-scrollbar" id="chair-tools-free">
             <div class="space">
                 <button class="transparent-button" name="object-lock-btn">
                     <i class="icon-lock"></i>
@@ -69,10 +72,9 @@
                     <i class="icon-cancel-circled"></i>
                 </button>
             </div>
-
             <span class="smallTitle chair-type">Krzesło</span>
             <span class="circled chair-ID">
-                00
+
             </span>
 
             <span class="greenText">Wolne</span>
@@ -94,7 +96,7 @@
         </div>
 
         <!-- Chair Tools  BUSY -->
-        <div class="popup" id="chair-tools-occupied">
+        <div class="popup custom-scrollbar" id="chair-tools-occupied">
             <div class="space">
                 <button class="transparent-button" name="object-lock-btn">
                     <i class="icon-lock"></i>
@@ -135,7 +137,7 @@
         </div>
 
         <!-- Table Tools -->
-        <div class="popup" id="table-tools">
+        <div class="popup custom-scrollbar" id="table-tools">
 
             <div class="space">
                 <button class="transparent-button" name="object-lock-btn">
@@ -209,7 +211,7 @@
         </div>
 
         <!-- add Quest -->
-        <div class="popup" id="add-quest-tool">
+        <div class="popup custom-scrollbar" id="add-quest-tool">
             <div class="space">
                 <button class="transparent-button" name="show-popup-btn" value="quest-list-window">
                     <i class="icon-address-book-o"></i>
@@ -233,7 +235,7 @@
         </div>
 
         <!-- edit Quest -->
-        <div class="popup" id="edit-quest-tool">
+        <div class="popup custom-scrollbar" id="edit-quest-tool">
             <div class="space">
                 <button class="transparent-button" name="show-popup-btn" value="quest-list-window">
                     <i class="icon-address-book-o"></i>
@@ -255,7 +257,7 @@
         </div>
 
         <!-- quest list -->
-        <div class="popup" id="quest-list-window">
+        <div class="popup custom-scrollbar" id="quest-list-window">
             <div class="space">
                 <button class="transparent-button" name="show-popup-btn" value="add-quest-tool">
                     <i class="icon-user-plus"></i>
@@ -298,7 +300,7 @@
         </div>
 
         <!-- Special Tools -->
-        <div class="popup" id="attractions-tools">
+        <div class="popup custom-scrollbar" id="attractions-tools">
             <div class="space">
                 <button class="transparent-button" name="object-lock-btn">
                     <i class="icon-lock"></i>
@@ -348,6 +350,79 @@
                 <i class="icon-trash-empty"></i>
                 Usuń Obiekt
             </button>
+        </div>
+
+
+        <div class="popup custom-scrollbar" id="marriage-calculator">
+            <div class="space space-left">
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+            <span class="smallTitle">Cena za salę</span>
+            <div class="form-box">
+                <label class="tool-input">Cena za gościa pełnopłatnego *<input type="number" class="tool-btn calculatorInput" name="priceFull"></label>
+                <label class="tool-input">Cena za gościa półpłatnego<input type="number" class="tool-btn calculatorInput" name="priceHalf"></label>
+            </div>
+            <div class="form-box">
+                <label class="tool-input">Ilość gości pełnopłatnych *<input type="number" class="tool-btn calculatorInput" name="fullPriceQuests"></label>
+                <label class="tool-input">Ilość gości półpłatnych<input type="number" class="tool-btn calculatorInput" name="halfPriceQuests"></label>
+            </div>
+            <label class="form-box">
+                <input type="checkbox" class="accentCheckbox"  id="calculator-twoDays-option">
+                <span class="small-text">Wesele z poprawinami ?</span>
+            </label>
+            <div class="form-box calculator-optional-forms element-hidden">
+                <label class="tool-input">Cena za gościa w dzień poprawin *<input type="number" class="tool-btn calculatorInput" name="priceSecondDay"></label>
+                <label class="tool-input">Ilość gości na poprawinach *<input type="number" class="tool-btn calculatorInput" name="secondDayQuests"></label>
+            </div>
+            <span class="smallTitle">Ilość alkoholu</span>
+            <div class="form-box">
+                <label class="tool-input">
+                    Ilość osób pełnoletnich i pijących
+                    <input type="number" class="tool-btn calculatorInput" name="drinkingQuests">
+                </label>
+            </div>
+            <p>Rodzaje dostępnego alkoholu: </p>
+            <div class="symetric-mesh">
+                
+                <label>
+                    <input checked type="checkbox" class="accentCheckbox calculatorCheckBox"  value="whiskey">
+                    <span class="small-text">Whisky</span>
+                </label>
+                <label>
+                    <input checked type="checkbox" class="accentCheckbox calculatorCheckBox"  value="vodka">
+                    <span class="small-text">Wódka</span>
+                </label>
+                <label>
+                    <input checked type="checkbox" class="accentCheckbox calculatorCheckBox"  value="wine">
+                    <span class="small-text">Wino</span>
+                </label>
+                <label>
+                    <input checked type="checkbox" class="accentCheckbox calculatorCheckBox"  value="beer">
+                    <span class="small-text">Piwo</span>
+                </label>
+            </div>
+            <button class="accentBtn" name="show-popup-btn" value="marriage-calculator-result" id="calculator-start" disabled>Oblicz</button>
+        </div>
+
+        <div class="popup custom-scrollbar" id="marriage-calculator-result">
+            <div class="space space-left">
+                <button class="transparent-button" name="disable-popup-btn">
+                    <i class="icon-cancel-circled"></i>
+                </button>
+            </div>
+            <span class="smallTitle">Wyniki Obliczeń</span>
+            <p class="small-text">Sugerowana ilość alkoholu</p>
+            <div class="form-box" id="suggested-alcohol-list">
+            </div>
+            
+            <p class="space"><span>Osoby pełnopłatne: </span> <span id="calc-result-1">12500</span></p>
+            <p class="space"><span>Osoby niepełnopłatne: </span> <span id="calc-result-2">12500</span></p>
+            <p class="space calculator-optional-forms element-hidden"><span>Poprawiny: </span> <span id="calc-result-3">12500</span></p>
+            <p class="space"><span>Suma: </span> <span id="calc-result-4">12500</span></p>
+
+           <button class="accentBtn" name="show-popup-btn" value="marriage-calculator">Cofnij</button>
         </div>
 
     </div>
