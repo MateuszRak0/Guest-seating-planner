@@ -1327,7 +1327,7 @@ appWindow.addEventListener("touchmove",actionActive);
 //WHEN LOADING 
 (function(){
 
-    const attractionsJsonURL = " https://raw.githubusercontent.com/MateuszRak0/Guest-seating-planner/main/data.json ";
+    const attractionsJsonURL = " https://raw.githubusercontent.com/MateuszRak0/Guest-seating-planner/main/data/attractions.json ";
     //const languagesJsonURL = ""; in future;
     //const MessagesJsonURL = ""; in future;
 
