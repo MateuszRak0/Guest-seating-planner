@@ -8,50 +8,44 @@
     "error01": {
         "title": "Obiekt Zablokowany",
         "content": "Nie można usunąc tego obiektu tak długo jak jest on zablokowany",
-        "acceptBtn": "Rozumiem",
-        "rejectBtn":"ok"
+        "acceptBtn": "Rozumiem"
     },
     "error02": {
         "title": "Krzesła zablokowane",
         "content": "Nie można usunąc kolejnych krzeseł ponieważ są one zablokowane",
-        "acceptBtn": "Rozumiem",
-        "rejectBtn":"ok"
+        "acceptBtn": "Rozumiem"
         
     },
     "error03": {
         "title": "Krzesła zablokowane",
         "content": "Nie można usunąc tego stołu ponieważ któreś z jego krzeseł jest zablokowane ",
-        "acceptBtn": "Rozumiem",
-        "rejectBtn":"ok"
+        "acceptBtn": "Rozumiem"
     },
     "error04": {
         "title": "Zamiana niemożliwa",
         "content": "Któreś z wybranych do zamiany krzeseł jest zablokowane !",
-        "acceptBtn": "Rozumiem",
-        "rejectBtn":"ok"
+        "acceptBtn": "Rozumiem"
     },
     "beforeRemove": {
         "title": "Na pewno ?",
         "content": "Operacji Usunięcia nie można już cofnąć czy jesteś pewny że chcesz to zrobić ?",
         "acceptBtn": "Tak usuń",
-        "rejectBtn":"ok"
+        "rejectBtn":"Nie usuwaj"
     },
     "tableFull": {
         "title": "Stolik jest pełny !",
         "content": "Nie da rady stworzyć większego stołu tego typu ! ( Najbardziej pojemny jest stół prostokątny )",
-        "acceptBtn": "Rozumiem",
-        "rejectBtn":"ok"
+        "acceptBtn": "Rozumiem"
     },
     "tableFull2": {
         "title": "Stolik jest pełny !",
         "content": "Nie możesz przenieść krzesła do tego stołu ponieważ jest już pełny !",
-        "acceptBtn": "Rozumiem",
-        "rejectBtn":"ok"
+        "acceptBtn": "Rozumiem"
     },
     "exit": {
         "title": "Czy na pewno chcesz wyjść ?",
         "content": "Jeżeli opuścisz planer twoje postępy nie zostaną zapisane !",
         "acceptBtn": "Tak chcę wyjść",
-        "rejectBtn":"ok"
+        "rejectBtn":"Jednak zostaje !"
     }
 }
