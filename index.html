@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="css/planner-styles.css">
     <link rel="stylesheet" href="css/fontello.css">
     <link rel="text" href="config.json">
-
 </head>
 
 <body>
@@ -19,14 +18,16 @@
         <canvas class="app-canvas" width="2600" height="2600"></canvas>
         <canvas class="app-canvas" width="2600" height="2600"></canvas>
 
-        <div id="top-bar">
-            <button class="icon-address-book" title="Lista Gości" name="show-widget-btn" value="quest-list" type="button"></button>
-            <button class="icon-briefcase" title="Narzędzia" name="show-widget-btn" value="tools-list" type="button"></button>
-            <button class="icon-plus" title="Dodaj Obiekt" name="show-widget-btn" value="objects-list" type="button"></button>
-        </div>
-
         <button class="icon-menu" id="btn-show-sidebar"></button>
 
+        <div id="top-bar">
+            <button class="icon-address-book" title="Lista Gości" name="show-widget-btn" value="quest-list"
+                type="button"></button>
+            <button class="icon-briefcase" title="Narzędzia" name="show-widget-btn" value="tools-list"
+                type="button"></button>
+            <button class="icon-plus" title="Dodaj Obiekt" name="show-widget-btn" value="objects-list"
+                type="button"></button>
+        </div>
 
         <div id="side-bar">
             <button class="icon-sliders hidden-description" id="btn-global-settings"></button>
@@ -42,18 +43,18 @@
         </div>
 
         <div class="floating-widget" id="objects-list" draggable="false">
-                <div class="myIcon-rings"></div>
-                <div class="horizontal-list" id="obj-vert-list">
-                    <button type="button" name="add-table-btn" value="Circle">
-                        Okrągły stół
-                    </button>
-    
-                    <button type="button" name="add-table-btn" value="Square">
-                        Kwadratowy
-                        stół
-                    </button>
-                </div>
-                <input class="fake-slider" type="range" min="0" max="100" value="0" name="obj-vert-list">
+            <div class="myIcon-rings"></div>
+            <div class="horizontal-list" id="obj-vert-list">
+                <button type="button" name="add-table-btn" value="Circle">
+                    Okrągły stół
+                </button>
+
+                <button type="button" name="add-table-btn" value="Square">
+                    Kwadratowy
+                    stół
+                </button>
+            </div>
+            <input class="fake-slider" type="range" min="0" max="100" value="0" name="obj-vert-list">
         </div>
 
         <div class="floating-widget" id="tools-list" draggable="false">
@@ -68,7 +69,7 @@
                 </button>
 
                 <button type="button">
-                   Kreator Vinetek
+                    Kreator Vinetek
                 </button>
 
                 <button type="button">
@@ -80,48 +81,49 @@
 
         <div class="floating-widget" id="quest-list" draggable="false">
             <div class="myIcon-rings"></div>
-                <div>
-                    <label class="connected-inputs" for="quest-search-bar">
-                        <input type="search" id="quest-search-bar" list="quest-search-opt" placeholder="Szukaj Gościa">
-                        <button id="btn-search-quest">Szukaj</button>
-                    </label>
+            <div>
+                <label class="connected-inputs" for="quest-search-bar">
+                    <input type="search" id="quest-search-bar" list="quest-search-opt" placeholder="Szukaj Gościa">
+                    <button id="btn-search-quest">Szukaj</button>
+                </label>
 
-                    <div id="quest-search-results"></div>
+                <div id="quest-search-results"></div>
 
-                    <datalist id="quest-search-opt">
+                <datalist id="quest-search-opt">
 
-                    </datalist>
-                    
-                </div>
+                </datalist>
 
-                <div class="vertical-list" id="quest-list-box">
-                </div>
+            </div>
 
-                <button class="standard-btn" name="show-widget-btn" value="add-quest" type="button"> Dodaj nowego Gościa </button>
-        
+            <div class="vertical-list" id="quest-list-box">
+            </div>
+
+            <button class="standard-btn" name="show-widget-btn" value="add-quest" type="button"> Dodaj nowego Gościa
+            </button>
+
         </div>
 
         <div class="floating-widget small-widget" id="add-quest" draggable="false">
-                <span class="title">Nowy Gość</span>
+            <span class="title">Nowy Gość</span>
 
-                <span class="connected-inputs">
-                    <span>Imię:</span>
-                    <input type="text" id="new-quest-name" value="Testowy Gość">
-                </span>
+            <span class="connected-inputs">
+                <span>Imię:</span>
+                <input type="text" id="new-quest-name" value="Testowy Gość">
+            </span>
 
-                <span class="connected-inputs">
-                    <span>Nazwisko:</span>
-                    <input type="text" id="new-quest-lastName">
-                </span>
+            <span class="connected-inputs">
+                <span>Nazwisko:</span>
+                <input type="text" id="new-quest-lastName">
+            </span>
 
-                <div class="some-space">
-                    <span>Usuń Nazwisko<input type="checkbox" id="remove-lastName" value="true"></span>
-                    <button class="standard-btn" id="new-quest-submit">Dodaj</button>
-                </div>
-    
+            <div class="some-space">
+                <span>Usuń Nazwisko<input type="checkbox" id="remove-lastName" value="true"></span>
+                <button class="standard-btn" id="new-quest-submit">Dodaj</button>
+            </div>
+
         </div>
 
-    <div class="floating-widget small-widget" id="edit-quest" draggable="false">
+        <div class="floating-widget small-widget" id="edit-quest" draggable="false">
             <span class="title">Edytuj Gościa</span>
 
             <span class="connected-inputs">
@@ -139,9 +141,9 @@
                 <button class="standard-btn" id="edit-quest-submit">Akceptuj</button>
             </div>
 
-    </div>
+        </div>
 
-    <div class="floating-widget small-widget" id="tools-chair" draggable="false">
+        <div class="floating-widget small-widget" id="tools-chair" draggable="false">
             <span class="title">
                 <span id="chair-title">Krzesło</span>
                 <span id="chair-id">00</span>
@@ -149,23 +151,25 @@
             <span class="subtitle" id="chair-subtitle">Adam Matuszek</span>
             <div class="vertical-list">
                 <button type="button" class="icon-user-times" id="chair-tools-relaseChair">Wykop osobę</button>
-                <button type="button" class="icon-user-plus" name="show-widget-btn" value="quest-list" type="button" id="chair-tools-addQuest">Dodaj osobę</button>
+                <button type="button" class="icon-user-plus" name="show-widget-btn" value="quest-list" type="button"
+                    id="chair-tools-addQuest">Dodaj osobę</button>
                 <button type="button" class="icon-pencil" id="chair-tools-editQuest">Edytuj osobę</button>
                 <button type="button" class="icon-sliders" name="change-object-mode">Zmień typ Krzesła</button>
                 <button type="button" class="padlock"></button>
                 <button type="button" class="icon-trash standard-btn" name="remove-object-btn">Usuń</button>
+            </div>
+
+
         </div>
-            
 
-    </div>
-
-    <div class="floating-widget small-widget" id="tools-table" draggable="false">
+        <div class="floating-widget small-widget" id="tools-table" draggable="false">
             <span class="title">Stolik <span id="tableID"></span></span>
             <span class="subtitle" id="tableChairs">krzesła 2/15</span>
             <div class="vertical-list">
                 <button type="button" class="icon-user-plus standard-btn" id="add-chair-btn">Dodaj Krzesło</button>
                 <button type="button" class="icon-user-times standard-btn" id="remove-chair-btn">Usuń Krzesło</button>
-                <button type="button" class="icon-sliders standard-btn" name="change-object-mode">Układ siedzień</button>
+                <button type="button" class="icon-sliders standard-btn" name="change-object-mode">Układ
+                    siedzień</button>
                 <button type="button" class="icon-sliders standard-btn" name="copy-object">Kopiuj Obiekt</button>
                 <button type="button" class="padlock"></button>
                 <span class="connected-standard-buttons">
@@ -174,63 +178,49 @@
                 </span>
                 <button type="button" class="icon-trash standard-btn" name="remove-object-btn">Usuń</button>
             </div>
-    </div>
-    
-    <div class="blocker">
-    
-                <div class="widget widget-medium" id="msg-box">
-    
-                    <img src="images/heart.png" alt="">
-                    <span class="title" id="msg-title">Witamy w Planerze Ślubnym</span>
-                
-                    <p id="msg-content">
-                        W tym narzędziu szybko zaplanujesz rozmieszczenie stołów , gości i atrakcji na swoim ślubie.
-                        Przygotujesz gotowe do druku Vinetki Dla każdej z dodanych osób a po rozmieszczeniu wszystkich gości
-                        szybko utworzysz wydruk planu stołów !
-                    </p>
-    
-                    <div class="some-space">
-                        <button id="msg-reject">Po prostu rozpocznij</button>
-                        <button id="msg-accept">Zacznij samouczek</button>
-                    </div>
-    
-                </div>
-    
-    
-                <div class="widget widget-medium" id="loading-window">
-                    <img src="images/heart.png" alt="">
-                    <span class="title">Ładowanie</span>
-                    <span>
-                        zapraszam gości...
-                    </span>
-                    <progress max="100" value="0"></progress>
-                </div>
-
-
-
-            <div id="test" draggable="true">
-
-            <script>
-                let element = document.getElementById("test");
-                element.addEventListener("drag",track);
-
-                function track(e){
-                    console.log(e)
-                }
-
-            </script>
-
-    
         </div>
 
+
+        <div class="widget" id="msg-box">
+            <div class="widget-medium">
+
+                <img src="images/heart.png" alt="">
+                <span class="title" id="msg-title">Witamy w Planerze Ślubnym</span>
+    
+                <p id="msg-content">
+                    W tym narzędziu szybko zaplanujesz rozmieszczenie stołów , gości i atrakcji na swoim ślubie.
+                    Przygotujesz gotowe do druku Vinetki Dla każdej z dodanych osób a po rozmieszczeniu wszystkich gości
+                    szybko utworzysz wydruk planu stołów !
+                </p>
+    
+                <div class="some-space">
+                    <button id="msg-reject">Po prostu rozpocznij</button>
+                    <button id="msg-accept">Zacznij samouczek</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="widget active" id="loading-window"> 
+            <div class="widget-medium">
+                <img src="images/heart.png" alt="">
+                <span class="title">Ładowanie</span>
+                <span id="loading-progress-text">
+                    zapraszam gości...
+                </span>
+                <progress max="100" value="0" id="loading-progress-bar"></progress>
+            </div>
+
+        </div>
+
+
+
     </div>
 
-    
-    <script src="core.js"></script>
+    <script src="scripts/widgets.js"></script>
     <script src="scripts/effects.js"></script>
-        
+    <script src="core.js"></script>
 
-    
 
 </body>
 
