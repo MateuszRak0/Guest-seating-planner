@@ -42,7 +42,7 @@
             <span id="stats-2"> Krzesła: 0 </span>
         </div>
 
-        <div class="floating-widget" id="objects-list" draggable="false">
+        <div class="floating-widget" id="objects-list" >
             <div class="myIcon-rings"></div>
             <div class="horizontal-list" id="obj-vert-list">
                 <button type="button" name="add-table-btn" value="Circle">
@@ -57,7 +57,7 @@
             <input class="fake-slider" type="range" min="0" max="100" value="0" name="obj-vert-list">
         </div>
 
-        <div class="floating-widget" id="tools-list" draggable="false">
+        <div class="floating-widget" id="tools-list" >
             <div class="myIcon-rings"></div>
             <div class="horizontal-list" id="tools-vert-list">
                 <button type="button">
@@ -79,7 +79,7 @@
             <input class="fake-slider" type="range" min="0" max="100" value="0" name="tools-vert-list">
         </div>
 
-        <div class="floating-widget" id="quest-list" draggable="false">
+        <div class="floating-widget" id="quest-list" >
             <div class="myIcon-rings"></div>
             <div>
                 <label class="connected-inputs" for="quest-search-bar">
@@ -88,7 +88,7 @@
                 </label>
 
                 <div id="quest-search-results"></div>
-
+                <div id="quest-list-mode"></div>
                 <datalist id="quest-search-opt">
 
                 </datalist>
@@ -103,7 +103,7 @@
 
         </div>
 
-        <div class="floating-widget small-widget" id="add-quest" draggable="false">
+        <div class="floating-widget small-widget" id="add-quest" >
             <span class="title">Nowy Gość</span>
 
             <span class="connected-inputs">
@@ -123,7 +123,7 @@
 
         </div>
 
-        <div class="floating-widget small-widget" id="edit-quest" draggable="false">
+        <div class="floating-widget small-widget" id="edit-quest" >
             <span class="title">Edytuj Gościa</span>
 
             <span class="connected-inputs">
@@ -143,7 +143,7 @@
 
         </div>
 
-        <div class="floating-widget small-widget" id="tools-chair" draggable="false">
+        <div class="floating-widget small-widget" id="tools-chair" >
             <span class="title">
                 <span id="chair-title">Krzesło</span>
                 <span id="chair-id">00</span>
@@ -155,14 +155,14 @@
                     id="chair-tools-addQuest">Dodaj osobę</button>
                 <button type="button" class="icon-pencil" id="chair-tools-editQuest">Edytuj osobę</button>
                 <button type="button" class="icon-sliders" name="change-object-mode">Zmień typ Krzesła</button>
-                <button type="button" class="padlock"></button>
+                <button type="button" class="padlock standard-btn"></button>
                 <button type="button" class="icon-trash standard-btn" name="remove-object-btn">Usuń</button>
             </div>
 
 
         </div>
 
-        <div class="floating-widget small-widget" id="tools-table" draggable="false">
+        <div class="floating-widget small-widget" id="tools-table" >
             <span class="title">Stolik <span id="tableID"></span></span>
             <span class="subtitle" id="tableChairs">krzesła 2/15</span>
             <div class="vertical-list">
@@ -171,7 +171,7 @@
                 <button type="button" class="icon-sliders standard-btn" name="change-object-mode">Układ
                     siedzień</button>
                 <button type="button" class="icon-sliders standard-btn" name="copy-object">Kopiuj Obiekt</button>
-                <button type="button" class="padlock"></button>
+                <button type="button" class="padlock standard-btn"></button>
                 <span class="connected-standard-buttons">
                     <button type="button" class="icon-ccw standard-btn" name="rotate-object-btn" value="1"></button>
                     <button type="button" class="icon-cw standard-btn" name="rotate-object-btn" value="-1"></button>
@@ -180,11 +180,27 @@
             </div>
         </div>
 
+        <div class="floating-widget small-widget" id="tools-attraction" >
+            <span class="title" id="attraction-title"></span>
+            <span class="subtitle" id="attraction-subtitle"></span>
+            <div class="vertical-list">
+                <button type="button" class="icon-sliders standard-btn" name="change-object-size" value="1">Powiększ</button>
+                <button type="button" class="icon-sliders standard-btn" name="change-object-size" value="-1">Pomniejsz</button>
+                <button type="button" class="icon-sliders standard-btn" name="change-object-mode">Zmień Kształt</button>
+                <button type="button" class="icon-sliders standard-btn" name="copy-object">Kopiuj Obiekt</button>
+                <button type="button" class="padlock standard-btn"></button>
+                <span class="connected-standard-buttons">
+                    <button type="button" class="icon-ccw standard-btn" name="rotate-object-btn" value="1"></button>
+                    <button type="button" class="icon-cw standard-btn" name="rotate-object-btn" value="-1"></button>
+                </span>
+                <button type="button" class="icon-trash standard-btn" name="remove-object-btn">Usuń</button>
+            </div>
+        </div>
 
         <div class="widget" id="msg-box">
             <div class="widget-medium">
 
-                <img src="images/heart.png" alt="">
+                
                 <span class="title" id="msg-title">Witamy w Planerze Ślubnym</span>
     
                 <p id="msg-content">
