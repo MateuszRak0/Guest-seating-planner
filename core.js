@@ -25,10 +25,6 @@ Set.prototype.lookFor = function(value){
     return [...this].indexOf(value);
 }
 
-Math.randomInt = function(min,max){
-    return Math.floor( Math.random() * (max - min) ) + min;
-}
-
 let colors = {
     locked:"#bf347080"
 }
@@ -69,7 +65,7 @@ const clickHoldLoop = {
         if(! this.intervalObj) return false ;
         clearInterval(this.intervalObj);
         this.intervalObj = false;
-    }
+    },
 };
 
 const dragScroll = {
@@ -149,11 +145,11 @@ const draggingTool = {
             if (this.dragedObj.constructor == Chair) {
                 let hoveredTable = selectObject([allTables],this.dragedObj.parent);
                 if (hoveredTable){
-                        if(hoveredTable.chairs.size+1 < hoveredTable.maxChairs){
+                        if(hoveredTable.chairs.size+1 <= hoveredTable.maxChairs){
                             this.dragedObj.changeTable(hoveredTable);
                         }
                         else{
-                            systemMessenger.show(msg_TableFull2); //msg full Table
+                            messenger.show("tableFull2"); //msg full Table
                             this.putBack();
                         }
                 }
@@ -332,7 +328,7 @@ class Circle extends Shape{
 };
 
 class Square extends Shape{
-    constructor(rotation,width,size){
+    constructor(rotation,size,width){
         super(rotation,size,width)
         this.corners = new Map();
     }
@@ -498,7 +494,7 @@ class Chair extends Furniture{
             return true;
         }
         else{
-            systemMessenger.show(msg_Error04);
+            messenger.show("error04");
             return false;
         }
     }
@@ -507,7 +503,6 @@ class Chair extends Furniture{
 class Attraction extends Furniture{
     constructor(data){
         let rotation = (data.rotation) ? data.rotation : 0;
-       // let tools = 
 
         if(data.circle){ super(new Circle(rotation,data.size), false, data.color)}
         else{ super(new Square(rotation,data.minWidth,data.size), false, data.color)}
@@ -515,6 +510,9 @@ class Attraction extends Furniture{
         for(let key in data){
             this[key] = data[key];
         }
+
+        this.tools = attractionsTools;
+        this.recalculate(true)
     }
 
     render(ctx){
@@ -547,8 +545,8 @@ class Attraction extends Furniture{
     };
 
     resize(value){
-        if(typeof value === "string"){
-            this.shape.size += parseInt(value);
+        if(typeof value === "number"){
+            this.shape.size += value;
             this.recalculate();
         }
     };
@@ -718,6 +716,7 @@ function renderAll(exception) {
 
 // Base Functions (actionStart/Active/End represents Mouse or Touch event )
 function actionStart(e) {
+    if(e.target != canvas2) return false;
     cursor.tracking(e); // for fix bug with old postion on mobile devices
     let object = selectObject([allTables, allChairs,allAttractions]);
     if (object) {
@@ -748,7 +747,7 @@ function actionStart(e) {
 
 function actionActive(e){
     draggingTool.drag();
-    if(!dragWidgetsTool.dragedWidget && e.target.tagName.toUpperCase() == "CANVAS"){
+    if(!dragWidgetsTool.dragedWidget && e.target == canvas2){
         dragScroll.scroll();
     } 
     (selectObject([allAttractions,allChairs,allTables])) ? document.body.style.cursor = "pointer" : document.body.style.cursor = "default";
@@ -777,9 +776,11 @@ function selectObject(lists,ignore){
 }
 
 //Tools Pined to specific object's 
+
 let questTools = new class{
     constructor(){
         this.widget = new FloatingWidget( document.getElementById("quest-list") );
+        this.modeDisplay = document.getElementById("quest-list-mode");
         this.selectedQuest = null;
         this.questList = document.getElementById("quest-list-box");
         this.clearMode = false;
@@ -803,7 +804,7 @@ let questTools = new class{
                     }
                 }
                 
-                this.countDisplay.innerHTML = `${sum} wyników`;
+                this.countDisplay.innerHTML = `${sum} wyników `;
             },
         }
 
@@ -828,7 +829,9 @@ let questTools = new class{
 
         document.getElementById("new-quest-submit").addEventListener("click",this.addQuest.bind(this));
         document.getElementById("edit-quest-submit").addEventListener("click",this.editQuest.bind(this));
-        document.getElementById("remove-quest-btn").addEventListener("click",this.removeObject.bind(this));
+        document.getElementById("remove-quest-btn").addEventListener("click",()=>{
+            messenger.show("beforeRemove",questTools.removeObject.bind(questTools))
+        });
 
         document.getElementById("chair-tools-editQuest").addEventListener("click", function(e){
             let quest = selectedObject.quest;
@@ -853,14 +856,20 @@ let questTools = new class{
     }
 
     selectMode(){
+        console.log("SELECT MODE")
         if(selectedObject){
-            console.log(this.widget.hidden)
             if(selectedObject.constructor == Chair && !selectedObject.quest){
                 this.editMode = false;
+                this.modeDisplay.innerHTML = "Tryb Usadzania gości";
             }
             else{
                 this.editMode = true;
+                this.modeDisplay.innerHTML = "Tryb edycji gości";
             }
+        }
+        else{
+            this.editMode = true;
+            this.modeDisplay.innerHTML = "Tryb edycji gości";
         }
         this.refresh();
     }
@@ -899,6 +908,7 @@ let questTools = new class{
                 this.selectedQuest.lastName = lastName;
                 this.selectedQuest.refresh();
                 chairTools.refreshData();
+                this.editQuestWidget.widget.hide();
             }
         }
     }
@@ -941,6 +951,7 @@ let questTools = new class{
     }
 
     removeObject(){
+        console.log("STARTUJE")
         if(this.selectedQuest){
             this.editQuestWidget.widget.hide()
             this.selectedQuest.leaveSeat();
@@ -974,7 +985,8 @@ let tableTools = new class{
     removeObject(){
         for (let chair of selectedObject.chairs) {
             if (chair.locked) {
-               // systemMessenger.show(msg_Error03);
+                console.log(chair)
+                messenger.show("error03");
                 return false;
             }
         }
@@ -999,7 +1011,7 @@ let tableTools = new class{
         table.shape.centerX = selectedObject.shape.centerX - 1;
         table.shape.centerY = selectedObject.shape.centerY - 1;
         allTables.add(table);
-        renderAll();
+        table.render(ctx)
     }
     
     addChair(){
@@ -1010,19 +1022,25 @@ let tableTools = new class{
             this.refreshData();
         }
         else{
-            console.log("TABLE FULL")
+            messenger.show("tableFull");
         }
     }
 
     removeChair(){
         if(selectedObject.chairs.size > 0){
             let selectedChair = this.selectChairToRemove();
-            if(!selectedChair.quest){
+            if(!selectedChair){
+                messenger.show("error02")
+            }
+            else if(!selectedChair.quest){
                 chairTools.removeObject(selectedChair);
                 this.refreshData();
             }
             else{
-                console.log("KTOS TU SIEDZI NA PENO ?")
+                messenger.show("removeBusyChair",(chair)=>{
+                    chairTools.removeObject(chair);
+                    tableTools.refreshData();
+                },false,selectedChair)
             }
         }
     }
@@ -1061,8 +1079,12 @@ let chairTools = new class{
 
     show(){
         this.refreshData();
-        questTools.selectMode();
-        this.widget.show(true);
+        if(questTools.widget.hidden){
+            this.widget.show(true);
+        }
+        else if(!questTools.widget.hidden && questTools.editMode){
+            this.widget.show(true);
+        }
     }
 
     refreshData(){
@@ -1121,36 +1143,45 @@ let chairTools = new class{
     }
 };
 
-let attractionsTools = {
-    popup: "attractions-tools",
-    idDisplay: document.getElementById("attraction-ID"),
-    nameDisplay:document.getElementById("attraction-name"),
-    shapeBtn:document.getElementById("change-shape-btn"),
+let attractionsTools = new class{
+    constructor(){
+        this.widget = new FloatingWidget( document.getElementById("tools-attraction") );
+        this.title =  document.getElementById("attraction-title");
+        this.subtitle = document.getElementById("attraction-subtitle");
+        this.shapeBtn = this.widget.element.querySelector("button[name=change-object-mode]");
 
-    show: function () {
-        (selectedObject.blockShape) ? this.shapeBtn.disabled = true : this.shapeBtn.disabled = false ;
-        popupsMenager.activeById(this.popup);
-        let num = 0;
-        for(let attraction of allAttractions){
-            if(attraction.name == selectedObject.name){
-                num++;
-                if(attraction == selectedObject) break
-            }
+        for(let btn of document.getElementsByName("change-object-size")){
+            let value = parseInt(btn.value)
+            btn.addEventListener("mousedown",(e)=>{
+                if(e.button == 0){
+                    clickHoldLoop.start(selectedObject.resize.bind(selectedObject),value)
+                }
+            })
+        
+            btn.addEventListener("touchstart",(e)=>{ clickHoldLoop.start( selectedObject.resize.bind(selectedObject), value ) })
+            btn.addEventListener("mouseleave",()=>{clickHoldLoop.stop()})
         }
-        this.idDisplay.innerHTML = num;
-        this.nameDisplay.innerHTML = selectedObject.name;
-    },
+    }
+
+    show() {
+        (selectedObject.blockShape) ? this.shapeBtn.disabled = true : this.shapeBtn.disabled = false ;
+        this.widget.show(true)
+        this.title.innerHTML = selectedObject.name;
+    }
 
     copyObject(){
-        let attraction = new Attraction()
-        // let table = new selectedObject.constructor(selectedObject.chairs.length, selectedObject.sides, selectedObject.shape.rotation);
-        // table.shape.centerX = selectedObject.shape.centerX - 1;
-        // table.shape.centerY = selectedObject.shape.centerY - 1;
-        // allTables.push(table);
-        // renderAll();
+        let data = availableAttractions.get(selectedObject.id)
+        let attraction = new Attraction(data)
+        attraction.shape = new selectedObject.shape.constructor(selectedObject.shape.rotation,selectedObject.shape.size,selectedObject.shape.width)
+        attraction.shape.centerX = selectedObject.shape.centerX - 1;
+        attraction.shape.centerY = selectedObject.shape.centerY - 1;
+        allAttractions.add(attraction)
+        attraction.render(ctx);
     }
 
 };
+
+//let notesTools in future
 
 
 
@@ -1186,7 +1217,10 @@ for(let btn of document.getElementsByName("rotate-object-btn")){
 for(let btn of document.getElementsByName("remove-object-btn")){
     btn.addEventListener("click", ()=>{  
         if( selectedObject ) {
-            if( !selectedObject.locked ) selectedObject.tools.removeObject();
+            if( !selectedObject.locked ){
+                messenger.show("beforeRemove",selectedObject.tools.removeObject)
+            } 
+            else{ messenger.show("error01") }
         }; 
     });
 }
@@ -1210,7 +1244,6 @@ addEventListener("touchend",()=>{clickHoldLoop.stop()});
 appWindow.addEventListener("mousemove",actionActive);
 appWindow.addEventListener("touchmove",actionActive);
 
-
 //First loading
 
 let stateCheck = setInterval(() => {
@@ -1226,7 +1259,7 @@ let stateCheck = setInterval(() => {
             loaded:0,
             progressText: document.getElementById("loading-progress-text"),
             progressBar: document.getElementById("loading-progress-bar"),
-            messages: [ " Zapraszanie gości... "," Planowanie ceremoni "," Dekorowanie sali ",],
+            messages: [ " Zapraszanie gości... "," Planowanie ceremoni "," Dekorowanie sali "," Wybieranie Sukni "],
 
             updateStatus: function(){
                 this.loaded ++;
