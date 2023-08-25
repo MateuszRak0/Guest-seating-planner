@@ -60,5 +60,19 @@
             "circle": false,
             "onlyStroke": true,
             "color": "#00c2cc"
+        },
+                "a005": {
+            "id": "a000",
+            "name": "Filar",
+            "multiper": 0,
+            "size": 75,
+            "minSize": 50,
+            "maxSize": 100,
+            "minWidth": 30,
+            "circle": true,
+            "onlyStroke": false,
+            "blockShape": true,
+            "hideText": true,
+            "color": "#424a61"
         }
 }
