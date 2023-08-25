@@ -1179,9 +1179,13 @@ let attractionsTools = new class{
         attraction.render(ctx);
     }
 
-};
+    removeObject(){
+        clearContext(ctx2);
+        allAttractions.delete(selectedObject);
+        selectedObject = false;
+    }
 
-//let notesTools in future
+};
 
 
 
