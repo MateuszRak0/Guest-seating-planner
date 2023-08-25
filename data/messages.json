@@ -32,6 +32,12 @@
         "acceptBtn": "Tak usuń",
         "rejectBtn":"Nie usuwaj"
     },
+    "removeBusyChair": {
+        "title": "Ktoś tu siedzi !",
+        "content": "Krzesło które planujesz usunąc jest zajęte przez gościa czy na pewno chcesz to zrobić ?",
+        "acceptBtn": "Tak usuń",
+        "rejectBtn":"Nie usuwaj"
+    },
     "tableFull": {
         "title": "Stolik jest pełny !",
         "content": "Nie da rady stworzyć większego stołu tego typu ! ( Najbardziej pojemny jest stół prostokątny )",
