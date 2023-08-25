@@ -4,7 +4,7 @@ const widgetsMenager = {
 
     refreshPositions:function(){
         for(let widget of this.activeWidgets){
-            widget.zIndex = 50 + this.activeWidgets.indexOf(widget);
+            widget.zIndex = 50 + this.activeWidgets.lookFor(widget);
         }
     },
 
@@ -31,11 +31,12 @@ for(let btn of document.getElementsByName("show-widget-btn")){
 }
 
 class Widget{
-    constructor(element){
+    constructor(element,showCallback){
         if(widgetsMenager.allWidgets.has(element.id)) return widgetsMenager.allWidgets.get(element.id);
         this.element = element;
         this.hidden = true;
         this.id = this.element.id;
+        this.showCallback = showCallback;
         widgetsMenager.allWidgets.set(this.id,this);
     }
 
@@ -44,6 +45,7 @@ class Widget{
     }
 
     show(saveToMemory,hideImportant){
+        if(typeof this.showCallback === "function") this.showCallback();
         this.hidden = false;
         this.checkPosition();
         if(!this.element.classList.contains("active")){
@@ -52,12 +54,13 @@ class Widget{
             if(saveToMemory) widgetsMenager.toHide = this;
             widgetsMenager.activeWidgets.add(this);
         } 
+        widgetsMenager.refreshPositions();
     }
 
     checkPosition(){
         let offScreen = false;
-        if(this.element.offsetLeft + this.element.offsetWidth/2 > appWindow.offsetWidth || this.element.offsetLeft < 0) offScreen = true;
-        if(this.element.offsetTop + this.element.offsetHeight/2 > appWindow.offsetHeight || this.element.offsetTop < 0) offScreen = true;
+        if(this.element.offsetLeft + this.element.offsetWidth/2 > appWindow.offsetWidth || this.element.offsetLeft < 0 - this.element.offsetWidth/2) offScreen = true;
+        if(this.element.offsetTop + this.element.offsetHeight/2 > appWindow.offsetHeight || this.element.offsetTop < 0 - this.element.offsetHeight/2) offScreen = true;
 
         if(offScreen){
             this.element.style.left = `${60}px`;
@@ -141,7 +144,8 @@ const messenger = new class{
     }
 
 
-    show(msgID,acceptFunc,rejectFunc){
+    show(msgID,acceptFunc,rejectFunc,arg){
+        console.log("POKAZUJE")
         let message = this.allMessages[msgID];
         if(message){
             this.updateContent(message);
@@ -150,6 +154,7 @@ const messenger = new class{
             this.updateContent(this.allMessages.messageNotFound);
         }
         this.showed = true;
+        this.arg = arg;
         this.acceptFunc = acceptFunc;
         this.rejectFunc = rejectFunc;
         this.widget.show()
@@ -158,21 +163,38 @@ const messenger = new class{
     updateContent(message){
         this.elements.title.innerHTML = message.title;
         this.elements.content.innerHTML = message.content;
-        this.elements.rejectBtn.innerHTML = message.rejectBtn;
         this.elements.acceptBtn.innerHTML = message.acceptBtn;
+        if(message.rejectBtn){
+            this.switchRejectBtn();
+            this.elements.rejectBtn.innerHTML = message.rejectBtn;
+        }
+        else{
+            this.switchRejectBtn(true);
+        }
+    }
+    
+    switchRejectBtn(hide){
+        const status = this.elements.rejectBtn.classList.contains("hidden");
+        if(hide){
+            if(!status) this.elements.rejectBtn.classList.add("hidden");
+        }
+        else{
+            if(status) this.elements.rejectBtn.classList.remove("hidden");
+        }
     }
 
     accept(){
-        if( typeof this.acceptFunc === "function") this.acceptFunc();
         this.hide();
+        if( typeof this.acceptFunc === "function") this.acceptFunc(this.arg);
     }
     
     reject(){
-        if( typeof this.rejectFunc === "function" ) this.rejectFunc();
+        if( typeof this.rejectFunc === "function" ) this.rejectFunc(this.arg);
         this.hide();
     }
 
     hide(){
+        console.log("CHOWAM")
         this.widget.hide();
         this.showed = false;
     }
